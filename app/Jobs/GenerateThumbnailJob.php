@@ -31,7 +31,7 @@ class GenerateThumbnailJob implements ShouldQueue
             $originalFullPath = Storage::disk('local')->path($this->photo->original_path);
 
             $manager = new ImageManager(new Driver());
-            $image = $manager->read($originalFullPath);
+            $image = $manager->decodePath($originalFullPath);
 
             $width = $image->width();
             $height = $image->height();

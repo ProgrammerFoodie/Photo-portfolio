@@ -19,9 +19,13 @@ Route::middleware('auth')->group(function () {
 
 require __DIR__.'/auth.php';
 use App\Http\Controllers\PhotoUploadController;
+use App\Http\Controllers\AlbumController;
 
 Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::get('/upload', [PhotoUploadController::class, 'showUploadForm'])->name('upload.form');
     Route::post('/upload-chunk', [PhotoUploadController::class, 'storeChunk'])->name('upload.chunk');
     Route::post('/upload-finalize', [PhotoUploadController::class, 'finalize'])->name('upload.finalize');
+
+    Route::get('/albums/create', [AlbumController::class, 'create'])->name('admin.albums.create');
+    Route::post('/albums', [AlbumController::class, 'store'])->name('admin.albums.store');
 });

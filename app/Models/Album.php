@@ -16,8 +16,14 @@ class Album extends Model
         'name',
         'slug',
         'description',
+        'date_taken',
+        'location',
         'cover_photo_id',
         'sort_order',
+    ];
+
+    protected $casts = [
+        'date_taken' => 'date',
     ];
 
     public function parent(): BelongsTo

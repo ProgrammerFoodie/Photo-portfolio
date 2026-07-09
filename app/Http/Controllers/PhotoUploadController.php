@@ -19,7 +19,7 @@ class PhotoUploadController extends Controller
     {
         $albums = Album::orderBy('name')->get();
 
-        return view('admin.upload', ['albums' => $albums]);
+        return view('admin.photos.upload', ['albums' => $albums]);
     }
 
     public function storeChunk(StoreChunkRequest $request): JsonResponse
