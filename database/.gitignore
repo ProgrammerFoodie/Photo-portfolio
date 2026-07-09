@@ -14,3 +14,6 @@
 Homestead.json
 Homestead.yaml
 auth.json
+
+
+git remote add origin https://github.com/ProgrammerFoodie/Photo-portfolio.git
