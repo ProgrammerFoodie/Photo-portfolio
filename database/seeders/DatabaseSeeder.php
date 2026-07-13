@@ -20,18 +20,21 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        User::firstOrCreate(
+            ['email' => 'test@example.com'],
+            ['name' => 'Test User'],
+        );
 
         // Sample albums/photos/downloads so the dashboard isn't empty on a
-        // fresh install. Safe to comment out once you have real content.
-        Album::factory(5)
-            ->create()
-            ->each(function (Album $album) {
-                Photo::factory(rand(5, 30))->create(['album_id' => $album->id]);
-                Download::factory(rand(0, 10))->create(['album_id' => $album->id]);
-            });
+        // fresh install. Only runs once, on a genuinely empty install --
+        // safe to re-run db:seed afterwards without piling up more demo data.
+        if (Album::count() === 0) {
+            Album::factory(5)
+                ->create()
+                ->each(function (Album $album) {
+                    Photo::factory(rand(5, 30))->create(['album_id' => $album->id]);
+                    Download::factory(rand(0, 10))->create(['album_id' => $album->id]);
+                });
+        }
     }
 }
