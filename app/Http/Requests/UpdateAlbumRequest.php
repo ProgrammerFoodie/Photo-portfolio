@@ -3,8 +3,9 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
-class StoreAlbumRequest extends FormRequest
+class UpdateAlbumRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -18,7 +19,12 @@ class StoreAlbumRequest extends FormRequest
             'description' => ['nullable', 'string'],
             'date_taken' => ['nullable', 'date'],
             'location' => ['nullable', 'string', 'max:255'],
-            'parent_id' => ['nullable', 'integer', 'exists:albums,id'],
+            'parent_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('albums', 'id'),
+                Rule::notIn([$this->route('album')->id]),
+            ],
         ];
     }
 }

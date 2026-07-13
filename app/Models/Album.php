@@ -46,6 +46,20 @@ class Album extends Model
         return $this->belongsTo(Photo::class, 'cover_photo_id');
     }
 
+    public function downloads(): HasMany
+    {
+        return $this->hasMany(Download::class);
+    }
+
+    protected static function booted(): void
+    {
+        // Delete child photos through Eloquent (not just the DB cascade) so
+        // Photo's own `deleting` event fires and cleans up files on disk.
+        static::deleting(function (Album $album) {
+            $album->photos->each(fn (Photo $photo) => $photo->delete());
+        });
+    }
+
     public function isSubAlbum(): bool
     {
         return $this->parent_id !== null;
