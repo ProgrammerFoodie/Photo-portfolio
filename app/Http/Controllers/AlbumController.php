@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateAlbumRequest;
 use App\Models\Album;
 use App\Services\DashboardStatsService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Number;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -73,12 +74,28 @@ class AlbumController extends Controller
     {
         return view('admin.albums.edit', [
             'album' => $album,
+            'photos' => $album->photos()->orderBy('sort_order')->get(),
             'parentOptions' => Album::query()
                 ->whereNull('parent_id')
                 ->where('id', '!=', $album->id)
                 ->orderBy('name')
                 ->get(['id', 'name']),
         ]);
+    }
+
+    public function setCover(Request $request, Album $album): RedirectResponse
+    {
+        $request->validate([
+            'photo_id' => ['required', 'integer', 'exists:photos,id'],
+        ]);
+
+        $photo = $album->photos()->findOrFail($request->integer('photo_id'));
+
+        $album->update(['cover_photo_id' => $photo->id]);
+
+        return redirect()
+            ->route('admin.albums.edit', $album)
+            ->with('status', 'Thumbnail updated.');
     }
 
     public function update(UpdateAlbumRequest $request, Album $album): RedirectResponse

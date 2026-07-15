@@ -3,182 +3,47 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ config('app.name', 'Gallery') }}</title>
+    <title>{{ \App\Models\Setting::get('site_title') }}</title>
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-    <style>
-        :root {
-            --bg: #0b0c0f;
-            --bg-elevated: #131417;
-            --border: #232428;
-            --text-muted: #9a9ba1;
-            --accent: #e8e9ec;
-        }
-
-        body {
-            background-color: var(--bg);
-            color: #e8e9ec;
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            font-weight: 300;
-        }
-
-        a { text-decoration: none; }
-
-        .navbar {
-            background-color: rgba(11, 12, 15, 0.85);
-            backdrop-filter: blur(8px);
-            border-bottom: 1px solid var(--border);
-        }
-
-        .navbar-brand {
-            font-weight: 600;
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
-            font-size: 1.05rem;
-        }
-
-        .nav-link {
-            color: var(--text-muted) !important;
-            font-size: 0.9rem;
-        }
-
-        .nav-link:hover,
-        .nav-link.active {
-            color: var(--accent) !important;
-        }
-
-        .hero {
-            padding: 5.5rem 0 3rem;
-            text-align: center;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .hero h1 {
-            font-weight: 600;
-            font-size: clamp(1.8rem, 4vw, 3rem);
-            letter-spacing: -0.01em;
-        }
-
-        .hero p {
-            color: var(--text-muted);
-            font-size: 1.05rem;
-            max-width: 40rem;
-            margin: 0.75rem auto 0;
-        }
-
-        .album-card {
-            position: relative;
-            background-color: var(--bg-elevated);
-            border: 1px solid var(--border);
-            border-radius: 0.5rem;
-            overflow: hidden;
-            transition: transform 0.2s ease, border-color 0.2s ease;
-            height: 100%;
-        }
-
-        .album-card:hover {
-            transform: translateY(-4px);
-            border-color: #3a3b40;
-        }
-
-        @media (min-width: 992px) {
-            .album-card-body {
-                position: absolute;
-                inset: 0;
-                display: flex;
-                flex-direction: column;
-                justify-content: flex-end;
-                padding: 1rem;
-                background: linear-gradient(to top, rgba(0, 0, 0, 0.88), rgba(0, 0, 0, 0.35) 55%, transparent);
-                opacity: 0;
-                transition: opacity 0.2s ease;
-            }
-
-            .album-card:hover .album-card-body {
-                opacity: 1;
-            }
-        }
-
-        .album-thumb {
-            aspect-ratio: 4 / 3;
-            width: 100%;
-            object-fit: cover;
-            display: block;
-            background-color: #1a1b1e;
-        }
-
-        .album-thumb-placeholder {
-            aspect-ratio: 4 / 3;
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, #1c1d21, #101114);
-            color: #4a4b50;
-        }
-
-        .album-card-body {
-            padding: 0.9rem 1rem 1.1rem;
-        }
-
-        .album-title {
-            color: var(--accent);
-            font-weight: 500;
-            font-size: 1rem;
-            margin-bottom: 0.15rem;
-        }
-
-        .album-meta {
-            color: var(--text-muted);
-            font-size: 0.8rem;
-        }
-
-        footer {
-            border-top: 1px solid var(--border);
-            color: var(--text-muted);
-            font-size: 0.85rem;
-            padding: 2rem 0;
-        }
-
-        .empty-state {
-            color: var(--text-muted);
-            padding: 5rem 0;
-            text-align: center;
-        }
-    </style>
+    @include('partials.site-styles')
 </head>
 <body>
 
-    <nav class="navbar navbar-expand-md sticky-top py-3">
+    @include('partials.site-nav')
+
+    @php
+        $coverPath = \App\Models\Setting::get('profile_cover_path');
+    @endphp
+    <header class="profile-header" @if ($coverPath) style="background-image: url('{{ route('profile.cover') }}');" @endif>
         <div class="container">
-            <a class="navbar-brand" href="{{ route('home') }}">{{ config('app.name', 'Gallery') }}</a>
+            <div class="profile-handle">{{ \App\Models\Setting::get('profile_handle') }}</div>
+            @if (\App\Models\Setting::get('profile_display_name'))
+                <div class="profile-display-name">{{ \App\Models\Setting::get('profile_display_name') }}</div>
+            @endif
+            @if (\App\Models\Setting::get('profile_bio'))
+                <p class="profile-bio mb-0">{{ \App\Models\Setting::get('profile_bio') }}</p>
+            @endif
 
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-
-            <div class="collapse navbar-collapse justify-content-end" id="mainNav">
-                <ul class="navbar-nav gap-md-4">
-                    <li class="nav-item"><a class="nav-link active" href="{{ route('home') }}">Albums</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">About</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">Contact</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{{ route('login') }}">Login</a></li>
-                </ul>
+            <div class="profile-stats">
+                <div>
+                    <span class="stat-num">{{ number_format($totalPhotos) }}</span>
+                    <span class="stat-label">pictures captured</span>
+                </div>
+                <div>
+                    <span class="stat-num">{{ number_format($totalAlbums) }}</span>
+                    <span class="stat-label">albums created</span>
+                </div>
+                <div>
+                    <span class="stat-num">{{ number_format($totalDownloads) }}</span>
+                    <span class="stat-label">downloaded images</span>
+                </div>
             </div>
-        </div>
-    </nav>
-
-    <header class="hero">
-        <div class="container">
-            <h1>Photo Albums</h1>
-            <p>A collection of moments, sorted and stored.</p>
         </div>
     </header>
 
-    <main class="container py-5">
+    @include('partials.site-tabs')
+
+    <main class="container py-4">
         @if ($albums->isEmpty())
             <div class="empty-state">
                 <p class="mb-0">No albums to show yet.</p>
@@ -187,10 +52,10 @@
             <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 g-4">
                 @foreach ($albums as $album)
                     <div class="col">
-                        <a href="#" class="album-card d-block">
+                        <a href="{{ route('albums.show', $album) }}" class="album-card d-block">
                             @if ($album->cover?->thumbnail_path)
                                 <img
-                                    src="{{ \Illuminate\Support\Facades\Storage::url($album->cover->thumbnail_path) }}"
+                                    src="{{ route('photos.thumbnail', $album->cover) }}"
                                     alt="{{ $album->name }}"
                                     class="album-thumb"
                                     loading="lazy"
@@ -219,11 +84,7 @@
         @endif
     </main>
 
-    <footer>
-        <div class="container text-center">
-            &copy; {{ now()->year }} {{ config('app.name', 'Gallery') }}
-        </div>
-    </footer>
+    @include('partials.site-footer')
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>

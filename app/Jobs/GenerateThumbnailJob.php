@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\Photo;
+use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -46,11 +47,35 @@ class GenerateThumbnailJob implements ShouldQueue
                 'thumbnail_path' => $thumbnailRelativePath,
                 'width' => $width,
                 'height' => $height,
+                'captured_at' => $this->readCapturedAt($originalFullPath),
                 'status' => 'ready',
             ]);
         } catch (\Throwable $e) {
             $this->photo->update(['status' => 'failed']);
             throw $e;
+        }
+    }
+
+    /**
+     * Read the photo's EXIF capture timestamp (when the shutter fired), so
+     * albums can be sorted by when photos were actually taken rather than
+     * upload order. Uploads are JPEG-only, so exif_read_data() applies to
+     * every photo; returns null if the file has no EXIF date (e.g. a
+     * screenshot or an image stripped of metadata).
+     */
+    private function readCapturedAt(string $path): ?Carbon
+    {
+        $exif = @exif_read_data($path);
+        $raw = $exif['DateTimeOriginal'] ?? $exif['DateTime'] ?? null;
+
+        if (!$raw) {
+            return null;
+        }
+
+        try {
+            return Carbon::createFromFormat('Y:m:d H:i:s', $raw);
+        } catch (\Throwable) {
+            return null;
         }
     }
 }

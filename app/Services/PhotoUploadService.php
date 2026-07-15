@@ -69,6 +69,12 @@ class PhotoUploadService
             'status' => 'pending',
         ]);
 
+        // First photo ever uploaded to an album becomes its cover by default,
+        // until someone picks a different one in the admin panel.
+        Album::where('id', $album->id)
+            ->whereNull('cover_photo_id')
+            ->update(['cover_photo_id' => $photo->id]);
+
         GenerateThumbnailJob::dispatch($photo);
 
         return $photo;

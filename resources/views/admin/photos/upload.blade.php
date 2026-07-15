@@ -1,44 +1,42 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Upload Photos') }}
-        </h2>
+        <h1>Upload Photos</h1>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+    <div class="row justify-content-center">
+        <div class="col-lg-10 col-xl-8">
+            <div class="card p-4">
 
-                <div class="mb-4">
-                    <label for="albumSelect" class="block text-sm font-medium text-gray-700">Album</label>
-                    <select id="albumSelect" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+                <div class="mb-3">
+                    <label for="albumSelect" class="form-label">Album</label>
+                    <select id="albumSelect" class="form-select">
                         @foreach ($albums as $album)
                             <option value="{{ $album->id }}">{{ $album->name }}</option>
                         @endforeach
                     </select>
                 </div>
 
-                <div class="mb-4">
-                    <label for="folderInput" class="block text-sm font-medium text-gray-700">
+                <div class="mb-3">
+                    <label for="folderInput" class="form-label">
                         Select photos (.jpg / .jpeg only) — hold Cmd (Mac) or Ctrl (Windows) to pick multiple
                     </label>
-                    <input type="file" id="folderInput" accept="image/jpeg" multiple class="mt-1 block w-full">
+                    <input type="file" id="folderInput" accept="image/jpeg" multiple class="form-control">
                 </div>
 
-                <p id="fileCount" class="mb-4 text-sm text-gray-600"></p>
+                <p id="fileCount" class="mb-3 form-text card-muted"></p>
 
-                <button id="uploadBtn" type="button" class="bg-indigo-600 text-white px-4 py-2 rounded-md disabled:opacity-50" disabled>
+                <button id="uploadBtn" type="button" class="btn btn-primary" disabled>
                     Upload All
                 </button>
 
-                <div class="mt-6">
-                    <div class="w-full bg-gray-200 rounded-full h-3">
-                        <div id="overallBar" class="bg-indigo-600 h-3 rounded-full" style="width: 0%"></div>
+                <div class="mt-4">
+                    <div class="progress" style="height: 0.75rem;">
+                        <div id="overallBar" class="progress-bar" style="width: 0%"></div>
                     </div>
-                    <p id="overallStatus" class="mt-2 text-sm text-gray-600"></p>
+                    <p id="overallStatus" class="mt-2 form-text card-muted"></p>
                 </div>
 
-                <ul id="fileList" class="mt-6 space-y-1 text-sm max-h-80 overflow-y-auto"></ul>
+                <ul id="fileList" class="list-group list-group-flush mt-4" style="max-height: 20rem; overflow-y: auto;"></ul>
 
             </div>
         </div>
@@ -71,8 +69,8 @@
             selectedFiles.forEach((file, index) => {
                 const li = document.createElement('li');
                 li.id = `file-row-${index}`;
-                li.className = 'flex justify-between border-b py-1';
-                li.innerHTML = `<span>${file.name}</span><span id="file-status-${index}" class="text-gray-500">Queued</span>`;
+                li.className = 'list-group-item d-flex justify-content-between align-items-center bg-transparent';
+                li.innerHTML = `<span>${file.name}</span><span id="file-status-${index}" class="card-muted">Queued</span>`;
                 fileListEl.appendChild(li);
             });
         });
@@ -143,11 +141,11 @@
                 }
 
                 statusEl.textContent = '✅ Done';
-                statusEl.className = 'text-green-600';
+                statusEl.className = 'text-success';
                 return { file: file.name, success: true };
             } catch (err) {
                 statusEl.textContent = `❌ Failed (${err.message})`;
-                statusEl.className = 'text-red-600';
+                statusEl.className = 'text-danger';
                 return { file: file.name, success: false, error: err.message };
             }
         }

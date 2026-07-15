@@ -19,15 +19,16 @@ class DashboardStatsService
     public function getOverview(): array
     {
         return Cache::remember(self::CACHE_KEY, now()->addMinutes(5), function () {
-            $totalSizeBytes = (int) Photo::sum('filesize');
+            $diskPath = storage_path();
+            $diskTotalBytes = (int) disk_total_space($diskPath);
+            $diskFreeBytes = (int) disk_free_space($diskPath);
+            $diskUsedBytes = $diskTotalBytes - $diskFreeBytes;
 
             return [
                 'total_photos' => Photo::count(),
-                'total_size_bytes' => $totalSizeBytes,
-                'total_size_human' => Number::fileSize($totalSizeBytes, precision: 2),
+                'disk_used_human' => Number::fileSize($diskUsedBytes, precision: 1),
+                'disk_total_human' => Number::fileSize($diskTotalBytes, precision: 1),
                 'total_albums' => Album::count(),
-                'total_top_level_albums' => Album::whereNull('parent_id')->count(),
-                'total_sub_albums' => Album::whereNotNull('parent_id')->count(),
                 'total_downloads' => Download::count(),
             ];
         });

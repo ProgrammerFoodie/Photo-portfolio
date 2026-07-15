@@ -1,74 +1,65 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Albums') }}
-        </h2>
+        <div class="d-flex align-items-center justify-content-between">
+            <h1>Albums</h1>
+            <a href="{{ route('admin.albums.create') }}" class="btn btn-primary btn-sm">+ New Album</a>
+        </div>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-4">
-
-            @if (session('status'))
-                <div class="p-3 bg-green-100 text-green-800 rounded-md text-sm">
-                    {{ session('status') }}
-                </div>
-            @endif
-
-            <div class="flex justify-end">
-                <a href="{{ route('admin.albums.create') }}" class="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm">
-                    + New Album
-                </a>
-            </div>
-
-            <div class="bg-white shadow-sm sm:rounded-lg overflow-x-auto">
-                <table class="min-w-full text-sm">
-                    <thead class="bg-gray-50 text-left text-gray-500">
-                        <tr>
-                            <th class="px-4 py-3">Title</th>
-                            <th class="px-4 py-3">Parent</th>
-                            <th class="px-4 py-3">Photos</th>
-                            <th class="px-4 py-3">Size</th>
-                            <th class="px-4 py-3">Downloads</th>
-                            <th class="px-4 py-3">Date Taken</th>
-                            <th class="px-4 py-3">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-100">
-                        @forelse ($albums as $album)
-                            <tr>
-                                <td class="px-4 py-3 font-medium text-gray-900">{{ $album->name }}</td>
-                                <td class="px-4 py-3 text-gray-500">{{ $album->parent?->name ?? '—' }}</td>
-                                <td class="px-4 py-3">{{ $album->photos_count }}</td>
-                                <td class="px-4 py-3">{{ $album->size_human }}</td>
-                                <td class="px-4 py-3">{{ $album->downloads_count }}</td>
-                                <td class="px-4 py-3">{{ optional($album->date_taken)->format('Y-m-d') ?? '—' }}</td>
-                                <td class="px-4 py-3">
-                                    <div class="flex items-center gap-3">
-                                        <a href="{{ route('admin.albums.edit', $album) }}" class="text-indigo-600 hover:underline">
-                                            Edit
-                                        </a>
-                                        <form method="POST" action="{{ route('admin.albums.destroy', $album) }}"
-                                              onsubmit="return confirm('Delete &quot;{{ $album->name }}&quot; and all its photos? This cannot be undone.');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="text-red-600 hover:underline">Delete</button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="7" class="px-4 py-6 text-center text-gray-400">No albums yet.</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-
-            <div>
-                {{ $albums->links() }}
-            </div>
-
+    @if (session('status'))
+        <div class="alert alert-success mb-4">
+            {{ session('status') }}
         </div>
+    @endif
+
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr class="card-muted">
+                        <th class="ps-4">Title</th>
+                        <th>Parent</th>
+                        <th>Photos</th>
+                        <th>Size</th>
+                        <th>Downloads</th>
+                        <th>Date Taken</th>
+                        <th class="pe-4">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($albums as $album)
+                        <tr>
+                            <td class="ps-4 fw-medium">{{ $album->name }}</td>
+                            <td class="card-muted">{{ $album->parent?->name ?? '—' }}</td>
+                            <td>{{ $album->photos_count }}</td>
+                            <td>{{ $album->size_human }}</td>
+                            <td>{{ $album->downloads_count }}</td>
+                            <td class="card-muted">{{ optional($album->date_taken)->format('Y-m-d') ?? '—' }}</td>
+                            <td class="pe-4">
+                                <div class="d-flex align-items-center gap-3">
+                                    <a href="{{ route('admin.albums.edit', $album) }}" class="link-primary">
+                                        Edit
+                                    </a>
+                                    <form method="POST" action="{{ route('admin.albums.destroy', $album) }}"
+                                          onsubmit="return confirm('Delete &quot;{{ $album->name }}&quot; and all its photos? This cannot be undone.');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-link link-danger p-0 border-0 align-baseline">Delete</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="7" class="text-center card-muted py-5">No albums yet.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="mt-3">
+        {{ $albums->links('pagination::bootstrap-5') }}
     </div>
 </x-app-layout>

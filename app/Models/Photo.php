@@ -20,8 +20,13 @@ class Photo extends Model
         'filesize',
         'width',
         'height',
+        'captured_at',
         'status',
         'sort_order',
+    ];
+
+    protected $casts = [
+        'captured_at' => 'datetime',
     ];
 
     public function album(): BelongsTo
