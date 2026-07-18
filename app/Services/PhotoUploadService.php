@@ -75,6 +75,15 @@ class PhotoUploadService
             ->whereNull('cover_photo_id')
             ->update(['cover_photo_id' => $photo->id]);
 
+        // If this album is a subalbum, also use this photo as the parent
+        // album's cover when the parent has none of its own yet — otherwise
+        // parent albums whose only photos live in a subalbum stay coverless.
+        if ($album->parent_id !== null) {
+            Album::where('id', $album->parent_id)
+                ->whereNull('cover_photo_id')
+                ->update(['cover_photo_id' => $photo->id]);
+        }
+
         GenerateThumbnailJob::dispatch($photo);
 
         return $photo;

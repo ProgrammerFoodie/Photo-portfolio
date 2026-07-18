@@ -8,6 +8,7 @@ use App\Models\Photo;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -20,9 +21,11 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
+        // The first user created (id 1) is the sole super-admin who can
+        // manage other user accounts — see Gate::define('manage-users').
         User::firstOrCreate(
             ['email' => 'test@example.com'],
-            ['name' => 'Test User'],
+            ['name' => 'Test User', 'username' => 'admin', 'password' => Hash::make('password')],
         );
 
         // Sample albums/photos/downloads so the dashboard isn't empty on a

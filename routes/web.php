@@ -45,6 +45,7 @@ require __DIR__.'/auth.php';
 use App\Http\Controllers\PhotoUploadController;
 use App\Http\Controllers\AlbumController;
 use App\Http\Controllers\ContactMessageController;
+use App\Http\Controllers\UserController;
 
 Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::get('/upload', [PhotoUploadController::class, 'showUploadForm'])->name('upload.form');
@@ -65,4 +66,11 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::get('/messages', [ContactMessageController::class, 'index'])->name('admin.messages.index');
     Route::get('/messages/{message}', [ContactMessageController::class, 'show'])->name('admin.messages.show');
     Route::delete('/messages/{message}', [ContactMessageController::class, 'destroy'])->name('admin.messages.destroy');
+
+    Route::middleware('can:manage-users')->group(function () {
+        Route::get('/users', [UserController::class, 'index'])->name('admin.users.index');
+        Route::get('/users/create', [UserController::class, 'create'])->name('admin.users.create');
+        Route::post('/users', [UserController::class, 'store'])->name('admin.users.store');
+        Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('admin.users.destroy');
+    });
 });

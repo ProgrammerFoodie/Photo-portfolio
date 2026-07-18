@@ -82,11 +82,44 @@
         </div>
     </div>
 
-    <div class="row g-3 mb-4">
-        <div class="col-12">
-            <div class="card chart-card h-100">
-                <h6>Overview Counts</h6>
-                <canvas id="overviewCountsChart" height="120"></canvas>
+    <div class="row row-cols-1 row-cols-sm-3 g-3 mb-4">
+        <div class="col">
+            <div class="card stat-card">
+                <div class="stat-label">Uploads This Week</div>
+                <div class="stat-value">{{ number_format($stats['uploads_this_week']) }}</div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card stat-card">
+                <div class="stat-label">Most Downloaded Album</div>
+                @if ($stats['top_album_slug'])
+                    <a href="{{ route('albums.show', $stats['top_album_slug']) }}" target="_blank" rel="noopener" class="stat-value d-block text-truncate" title="{{ $stats['top_album_name'] }}">
+                        {{ $stats['top_album_name'] }}
+                    </a>
+                    <div class="card-muted small">{{ number_format($stats['top_album_downloads']) }} downloads</div>
+                @else
+                    <div class="card-muted">No downloads yet</div>
+                @endif
+            </div>
+        </div>
+        <div class="col">
+            <div class="card stat-card">
+                <div class="stat-label">Most Downloaded Photo</div>
+                @if ($stats['top_photo_id'])
+                    <a href="{{ route('photos.view', ['album' => $stats['top_photo_album_slug'], 'photo' => $stats['top_photo_id']]) }}"
+                       target="_blank" rel="noopener" class="d-flex align-items-center gap-2 text-decoration-none">
+                        <img src="{{ route('photos.thumbnail', $stats['top_photo_id']) }}" alt=""
+                             width="48" height="48" style="object-fit: cover; border-radius: 0.5rem; flex-shrink: 0;">
+                        <span class="text-truncate">
+                            <span class="stat-value d-block text-truncate" style="font-size: 1rem;" title="{{ $stats['top_photo_name'] }}">
+                                {{ $stats['top_photo_name'] }}
+                            </span>
+                            <span class="card-muted small">{{ number_format($stats['top_photo_downloads']) }} downloads</span>
+                        </span>
+                    </a>
+                @else
+                    <div class="card-muted">No downloads yet</div>
+                @endif
             </div>
         </div>
     </div>
@@ -120,35 +153,4 @@
         <a href="{{ route('admin.albums.create') }}" class="btn btn-primary btn-sm">+ New Album</a>
         <a href="{{ route('upload.form') }}" class="btn btn-outline-light btn-sm">Upload Photos</a>
     </div>
-
-    <script>
-        const chartTextColor = 'rgba(192, 192, 192, 0.7)';
-        const chartGridColor = 'rgba(192, 192, 192, 0.16)';
-        Chart.defaults.color = chartTextColor;
-        Chart.defaults.borderColor = chartGridColor;
-
-        new Chart(document.getElementById('overviewCountsChart'), {
-            type: 'bar',
-            data: {
-                labels: ['Photos', 'Albums', 'Downloads'],
-                datasets: [{
-                    data: [
-                        {{ $stats['total_photos'] }},
-                        {{ $stats['total_albums'] }},
-                        {{ $stats['total_downloads'] }},
-                    ],
-                    backgroundColor: ['#ff5154', '#6f73d2', '#754f44'],
-                    borderRadius: 6,
-                    maxBarThickness: 48,
-                }],
-            },
-            options: {
-                plugins: { legend: { display: false } },
-                scales: {
-                    y: { beginAtZero: true, grid: { color: chartGridColor } },
-                    x: { grid: { display: false } },
-                },
-            },
-        });
-    </script>
 </x-app-layout>

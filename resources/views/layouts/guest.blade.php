@@ -1,30 +1,124 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-bs-theme="dark">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ config('app.name', 'Laravel') }}</title>
+        <title>{{ \App\Models\Setting::get('site_title') }}</title>
 
-        <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-        <!-- Scripts -->
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
+        <style>
+            :root, [data-bs-theme="dark"] {
+                --bg: #122932;
+                --bg-elevated: #1b333d;
+                --bg-sunken: #0f2129;
+                --border: rgba(192, 192, 192, 0.16);
+                --text-muted: rgba(192, 192, 192, 0.7);
+                --accent: #f5f5f5;
+                --brand: #ff5154;
+                --brand-rgb: 255, 81, 84;
+                --brand-hover: #ff6e71;
+
+                --bs-body-bg: var(--bg);
+                --bs-body-color: var(--accent);
+                --bs-border-color: var(--border);
+                --bs-primary: var(--brand);
+                --bs-primary-rgb: var(--brand-rgb);
+                --bs-link-color: var(--brand);
+                --bs-link-hover-color: var(--brand-hover);
+            }
+
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Inter', system-ui, sans-serif;
+                font-weight: 400;
+                -webkit-font-smoothing: antialiased;
+                background-color: var(--bg);
+                color: var(--accent);
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                padding: 2rem 1rem;
+            }
+
+            .auth-brand {
+                font-weight: 700;
+                font-size: 1.1rem;
+                letter-spacing: -0.01em;
+                color: var(--accent);
+                text-decoration: none;
+                margin-bottom: 1.5rem;
+            }
+
+            .auth-card {
+                max-width: 26rem;
+                width: 100%;
+                background: var(--bg-elevated);
+                border-radius: 1rem;
+                padding: 2rem;
+            }
+
+            .btn {
+                border-radius: 999px;
+                font-weight: 500;
+                transition: transform 0.12s ease, background-color 0.15s ease, border-color 0.15s ease;
+            }
+
+            .btn:active {
+                transform: scale(0.96);
+            }
+
+            .btn-primary {
+                background-color: var(--brand);
+                border-color: var(--brand);
+            }
+
+            .btn-primary:hover,
+            .btn-primary:active {
+                background-color: var(--brand-hover);
+                border-color: var(--brand-hover);
+            }
+
+            .form-control {
+                background-color: var(--bg-sunken);
+                border-color: var(--border);
+                color: var(--accent);
+            }
+
+            .form-control:focus {
+                background-color: var(--bg-sunken);
+                color: var(--accent);
+                border-color: var(--brand);
+                box-shadow: 0 0 0 0.25rem rgba(var(--brand-rgb), 0.25);
+            }
+
+            .form-label {
+                font-size: 0.85rem;
+                color: var(--text-muted);
+            }
+
+            .card-muted {
+                color: var(--text-muted);
+            }
+
+            .form-check-input:checked {
+                background-color: var(--brand);
+                border-color: var(--brand);
+            }
+        </style>
     </head>
-    <body class="font-sans text-gray-900 antialiased">
-        <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100">
-            <div>
-                <a href="/">
-                    <x-application-logo class="w-20 h-20 fill-current text-gray-500" />
-                </a>
-            </div>
+    <body>
+        <a href="/" class="auth-brand">{{ \App\Models\Setting::get('site_title') }}</a>
 
-            <div class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white shadow-md overflow-hidden sm:rounded-lg">
-                {{ $slot }}
-            </div>
+        <div class="auth-card">
+            {{ $slot }}
         </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     </body>
 </html>

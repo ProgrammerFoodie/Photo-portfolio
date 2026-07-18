@@ -37,11 +37,18 @@
                         @endif
                     </a>
                 </li>
+                @can('manage-users')
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}" href="{{ route('admin.users.index') }}">
+                            Users
+                        </a>
+                    </li>
+                @endcan
             </ul>
 
             <ul class="navbar-nav">
                 <li class="nav-item">
-                    <a class="nav-link" href="{{ route('home') }}">View Site</a>
+                    <a class="nav-link" href="{{ route('home') }}" target="_blank" rel="noopener">View Site</a>
                 </li>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="userMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
