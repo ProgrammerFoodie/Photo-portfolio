@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ $title }} &middot; {{ \App\Models\Setting::get('site_title') }}</title>
 
-    @include('partials.site-styles')
+    @include(\App\Support\Theme::is('version-2') ? 'partials.site-styles-version-2' : 'partials.site-styles')
 </head>
 <body>
 

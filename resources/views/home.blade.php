@@ -5,43 +5,94 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ \App\Models\Setting::get('site_title') }}</title>
 
-    @include('partials.site-styles')
+    @include(\App\Support\Theme::is('version-2') ? 'partials.site-styles-version-2' : 'partials.site-styles')
 </head>
 <body>
 
-    @include('partials.site-nav')
+    @include('partials.site-nav', ['overlay' => \App\Support\Theme::is('version-2')])
 
     @php
         $coverPath = \App\Models\Setting::get('profile_cover_path');
     @endphp
-    <header class="profile-header" @if ($coverPath) style="background-image: url('{{ route('profile.cover') }}');" @endif>
-        <div class="container">
-            <div class="profile-handle">{{ \App\Models\Setting::get('profile_handle') }}</div>
-            @if (\App\Models\Setting::get('profile_display_name'))
-                <div class="profile-display-name">{{ \App\Models\Setting::get('profile_display_name') }}</div>
-            @endif
-            @if (\App\Models\Setting::get('profile_bio'))
-                <p class="profile-bio mb-0">{{ \App\Models\Setting::get('profile_bio') }}</p>
-            @endif
 
-            <div class="profile-stats">
-                <div>
-                    <span class="stat-num">{{ number_format($totalPhotos) }}</span>
-                    <span class="stat-label">pictures captured</span>
+    @if (\App\Support\Theme::is('version-2'))
+        <section class="hero-grid">
+            <div class="hero-tile hero-headline">
+                <div class="hero-eyebrow">
+                    <span>&#10022;</span> {{ \App\Models\Setting::get('site_title') }}
                 </div>
-                <div>
-                    <span class="stat-num">{{ number_format($totalAlbums) }}</span>
-                    <span class="stat-label">albums created</span>
-                </div>
-                <div>
-                    <span class="stat-num">{{ number_format($totalDownloads) }}</span>
-                    <span class="stat-label">downloaded images</span>
+                <h1>{{ \App\Models\Setting::get('profile_handle') }}</h1>
+                @if (\App\Models\Setting::get('profile_bio'))
+                    <p class="hero-tagline">{{ \App\Models\Setting::get('profile_bio') }}</p>
+                @endif
+                <div class="hero-meta">
+                    <span>{{ number_format($totalPhotos) }} photos</span>
+                    <span>&middot;</span>
+                    <span>{{ number_format($totalAlbums) }} albums</span>
                 </div>
             </div>
-        </div>
-    </header>
+            @foreach ($heroPhotos as $photo)
+                <a href="{{ route('albums.show', $photo->album) }}" class="hero-tile hero-photo">
+                    <img src="{{ route('photos.thumbnail', $photo) }}" alt="" loading="lazy">
+                </a>
+            @endforeach
+            <div class="hero-scroll-cue">
+                <span>Scroll</span>
+                <i class="bi bi-chevron-down"></i>
+            </div>
+        </section>
 
-    @include('partials.site-tabs')
+        <nav class="hero-subnav">
+            <div class="container">
+                <ul class="hero-subnav-list">
+                    <li>
+                        <a href="{{ route('home') }}" class="{{ request()->routeIs('home', 'albums.show') ? 'active' : '' }}">
+                            <i class="bi bi-images"></i> Albums
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('about') }}" class="{{ request()->routeIs('about') ? 'active' : '' }}">
+                            <i class="bi bi-person"></i> About
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('contact') }}" class="{{ request()->routeIs('contact') ? 'active' : '' }}">
+                            <i class="bi bi-envelope"></i> Contact
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    @else
+        <header class="profile-header" @if ($coverPath) style="background-image: url('{{ route('profile.cover') }}');" @endif>
+            <div class="container">
+                <div class="profile-handle">{{ \App\Models\Setting::get('profile_handle') }}</div>
+                @if (\App\Models\Setting::get('profile_display_name'))
+                    <div class="profile-display-name">{{ \App\Models\Setting::get('profile_display_name') }}</div>
+                @endif
+                @if (\App\Models\Setting::get('profile_bio'))
+                    <p class="profile-bio mb-0">{{ \App\Models\Setting::get('profile_bio') }}</p>
+                @endif
+
+                <div class="profile-stats">
+                    <div>
+                        <span class="stat-num">{{ number_format($totalPhotos) }}</span>
+                        <span class="stat-label">pictures captured</span>
+                    </div>
+                    <div>
+                        <span class="stat-num">{{ number_format($totalAlbums) }}</span>
+                        <span class="stat-label">albums created</span>
+                    </div>
+                    <div>
+                        <span class="stat-num">{{ number_format($totalDownloads) }}</span>
+                        <span class="stat-label">downloaded images</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        @include('partials.site-tabs')
+    @endif
 
     <main class="container py-4">
         @if ($albums->isEmpty())

@@ -19,10 +19,14 @@ class DashboardStatsService
     public function getOverview(): array
     {
         return Cache::remember(self::CACHE_KEY, now()->addMinutes(5), function () {
-            $diskPath = storage_path();
-            $diskTotalBytes = (int) disk_total_space($diskPath);
-            $diskFreeBytes = (int) disk_free_space($diskPath);
-            $diskUsedBytes = $diskTotalBytes - $diskFreeBytes;
+            // "Used" counts only actual uploaded photo bytes, not whatever
+            // else (OS, other apps) happens to live on the same disk.
+            // "Total" is scaled down the same way -- real free space plus
+            // photo bytes -- so it excludes whatever the rest of the server
+            // (not photos) is using, rather than showing raw disk capacity.
+            $diskFreeBytes = (int) disk_free_space(storage_path());
+            $diskUsedBytes = (int) Photo::sum('filesize');
+            $diskTotalBytes = $diskFreeBytes + $diskUsedBytes;
 
             // Only plain scalars go into this array, never Eloquent models —
             // this gets serialized into the database cache table, and
@@ -43,7 +47,7 @@ class DashboardStatsService
 
             return [
                 'total_photos' => Photo::count(),
-                'disk_used_human' => Number::fileSize($diskUsedBytes, precision: 1),
+                'disk_free_human' => Number::fileSize($diskFreeBytes, precision: 1),
                 'disk_total_human' => Number::fileSize($diskTotalBytes, precision: 1),
                 'total_albums' => Album::count(),
                 'total_downloads' => Download::count(),

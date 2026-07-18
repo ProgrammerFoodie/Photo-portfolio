@@ -11,6 +11,7 @@
             'about' => ['about_title', 'about_body'],
             'contact' => ['contact_title', 'contact_body'],
             'social' => ['social_links'],
+            'theme' => ['theme'],
         ];
         $activeTab = 'general';
         foreach ($tabFields as $tab => $fields) {
@@ -72,6 +73,12 @@
                         <button class="nav-link {{ $activeTab === 'social' ? 'active' : '' }}" id="tab-social-btn"
                                 data-bs-toggle="tab" data-bs-target="#tab-social" type="button" role="tab">
                             Social Links
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link {{ $activeTab === 'theme' ? 'active' : '' }}" id="tab-theme-btn"
+                                data-bs-toggle="tab" data-bs-target="#tab-theme" type="button" role="tab">
+                            Theme
                         </button>
                     </li>
                 </ul>
@@ -212,6 +219,20 @@
                                     </div>
                                 </div>
                             </template>
+                        </div>
+
+                        <div class="tab-pane fade {{ $activeTab === 'theme' ? 'show active' : '' }}" id="tab-theme" role="tabpanel">
+                            <div class="mb-3">
+                                <label for="theme" class="form-label">Active Theme</label>
+                                <select name="theme" id="theme" class="form-select">
+                                    @foreach (config('themes') as $slug => $label)
+                                        <option value="{{ $slug }}" @selected(old('theme', $settings['theme']) === $slug)>
+                                            {{ $label }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <div class="form-text card-muted">Controls which look the public site uses.</div>
+                            </div>
                         </div>
 
                     </div>

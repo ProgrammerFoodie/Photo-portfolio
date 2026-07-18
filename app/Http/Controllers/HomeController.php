@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Album;
 use App\Models\Download;
 use App\Models\Photo;
+use App\Support\Theme;
 use Illuminate\View\View;
 
 class HomeController extends Controller
@@ -24,6 +25,9 @@ class HomeController extends Controller
             'totalPhotos' => Photo::count(),
             'totalAlbums' => Album::count(),
             'totalDownloads' => Download::count(),
+            'heroPhotos' => Theme::is('version-2')
+                ? Photo::where('status', 'ready')->whereNotNull('thumbnail_path')->inRandomOrder()->limit(7)->get()
+                : collect(),
         ]);
     }
 }

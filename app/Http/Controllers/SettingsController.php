@@ -7,6 +7,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -38,6 +39,7 @@ class SettingsController extends Controller
             'profile_display_name' => ['nullable', 'string', 'max:100'],
             'profile_bio' => ['nullable', 'string', 'max:300'],
             'cover_image' => ['nullable', 'image', 'max:8192'],
+            'theme' => ['required', 'string', Rule::in(array_keys(config('themes')))],
         ]);
 
         foreach ($validated as $key => $value) {

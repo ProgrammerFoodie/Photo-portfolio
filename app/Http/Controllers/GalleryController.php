@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Album;
 use App\Models\Download;
 use App\Models\Photo;
+use App\Services\DashboardStatsService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -15,6 +16,10 @@ use ZipArchive;
 
 class GalleryController extends Controller
 {
+    public function __construct(private readonly DashboardStatsService $stats)
+    {
+    }
+
     public function show(Album $album): View
     {
         $album->load([
@@ -64,6 +69,8 @@ class GalleryController extends Controller
             'user_agent' => $request->userAgent(),
         ]);
 
+        $this->stats->clearCache();
+
         return Storage::disk('local')->download($photo->original_path, $photo->original_filename);
     }
 
@@ -100,6 +107,8 @@ class GalleryController extends Controller
         }
 
         $zip->close();
+
+        $this->stats->clearCache();
 
         return response()
             ->download($zipPath, Str::slug($album->name) . '-photos.zip')

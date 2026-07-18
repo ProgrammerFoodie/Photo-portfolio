@@ -27,8 +27,8 @@
         <div class="col">
             <div class="card stat-card d-flex flex-row align-items-start justify-content-between">
                 <div>
-                    <div class="stat-label">Size on Disk</div>
-                    <div class="stat-value">{{ $stats['disk_used_human'] }} <span class="card-muted" style="font-size: 1rem; font-weight: 400;">/ {{ $stats['disk_total_human'] }}</span></div>
+                    <div class="stat-label">Free Space</div>
+                    <div class="stat-value">{{ $stats['disk_free_human'] }} <span class="card-muted" style="font-size: 1rem; font-weight: 400;">/ {{ $stats['disk_total_human'] }}</span></div>
                 </div>
                 <div class="stat-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">

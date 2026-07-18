@@ -26,6 +26,7 @@ class Setting extends Model
             'profile_display_name' => '',
             'profile_bio' => '',
             'profile_cover_path' => '',
+            'theme' => 'default',
         ];
     }
 
