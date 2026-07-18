@@ -39,29 +39,27 @@
             }
 
             body {
-                font-family: -apple-system, BlinkMacSystemFont, 'Inter', system-ui, sans-serif;
-                font-weight: 400;
-                -webkit-font-smoothing: antialiased;
+                font-family: 'Inter', system-ui, -apple-system, sans-serif;
+                font-weight: 300;
             }
 
             .admin-navbar {
-                background-color: rgba(18, 41, 50, 0.72);
-                backdrop-filter: blur(20px) saturate(180%);
-                -webkit-backdrop-filter: blur(20px) saturate(180%);
+                background-color: rgba(18, 41, 50, 0.9);
+                backdrop-filter: blur(8px);
                 border-bottom: 1px solid var(--border);
             }
 
             .admin-navbar .navbar-brand {
-                font-weight: 700;
-                letter-spacing: -0.01em;
-                font-size: 0.95rem;
+                font-weight: 600;
+                letter-spacing: 0.04em;
+                text-transform: uppercase;
+                font-size: 1.05rem;
                 color: var(--accent);
             }
 
             .admin-navbar .nav-link {
                 color: var(--text-muted);
-                font-size: 0.88rem;
-                font-weight: 500;
+                font-size: 0.9rem;
             }
 
             .admin-navbar .nav-link:hover,
@@ -83,7 +81,6 @@
             .card {
                 background-color: var(--bg-elevated);
                 border: 1px solid var(--border);
-                border-radius: 0.85rem;
             }
 
             .card-muted {
@@ -124,16 +121,6 @@
                 font-size: 0.78rem;
             }
 
-            .btn {
-                border-radius: 999px;
-                font-weight: 500;
-                transition: transform 0.12s ease, opacity 0.12s ease, background-color 0.15s ease, border-color 0.15s ease;
-            }
-
-            .btn:active {
-                transform: scale(0.96);
-            }
-
             .btn-primary {
                 background-color: var(--brand);
                 border-color: var(--brand);
@@ -151,20 +138,8 @@
                 --bs-btn-hover-border-color: var(--border);
             }
 
-            .btn-tinted {
-                background-color: rgba(var(--brand-rgb), 0.15);
-                color: var(--brand);
-                border: 0;
-            }
-
-            .btn-tinted:hover,
-            .btn-tinted:active {
-                background-color: rgba(var(--brand-rgb), 0.25);
-                color: var(--brand);
-            }
-
             .stat-card {
-                border-radius: 0.85rem;
+                border-radius: 0.5rem;
                 padding: 1.25rem 1.4rem;
                 height: 100%;
             }
@@ -193,6 +168,7 @@
                 background: rgba(var(--brand-rgb), 0.15);
                 color: var(--brand);
             }
+
 
             .photo-pick-grid {
                 display: flex;
@@ -257,20 +233,23 @@
     <body>
         @include('layouts.navigation')
 
-        @isset($header)
-            <div class="page-header">
-                <div class="container-xl">
-                    {{ $header }}
+        <div id="ajax-content">
+            @isset($header)
+                <div class="page-header">
+                    <div class="container-xl">
+                        {{ $header }}
+                    </div>
                 </div>
-            </div>
-        @endisset
+            @endisset
 
-        <main class="py-4">
-            <div class="container-xl">
-                {{ $slot }}
-            </div>
-        </main>
+            <main class="py-4">
+                <div class="container-xl">
+                    {{ $slot }}
+                </div>
+            </main>
+        </div>
 
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="{{ asset('js/admin-nav.js') }}" defer></script>
     </body>
 </html>

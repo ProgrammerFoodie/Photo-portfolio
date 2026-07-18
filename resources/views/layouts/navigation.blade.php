@@ -9,27 +9,27 @@
         <div class="collapse navbar-collapse" id="adminNav">
             <ul class="navbar-nav me-auto gap-md-4">
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">
+                    <a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" data-nav-match="dashboard" href="{{ route('dashboard') }}">
                         Dashboard
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('admin.albums.*') ? 'active' : '' }}" href="{{ route('admin.albums.index') }}">
+                    <a class="nav-link {{ request()->routeIs('admin.albums.*') ? 'active' : '' }}" data-nav-match="albums" href="{{ route('admin.albums.index') }}">
                         Albums
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('upload.form') ? 'active' : '' }}" href="{{ route('upload.form') }}">
+                    <a class="nav-link {{ request()->routeIs('upload.form') ? 'active' : '' }}" data-nav-match="upload" href="{{ route('upload.form') }}">
                         Upload
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}" href="{{ route('admin.settings.edit') }}">
+                    <a class="nav-link {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}" data-nav-match="settings" href="{{ route('admin.settings.edit') }}">
                         Settings
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('admin.messages.*') ? 'active' : '' }}" href="{{ route('admin.messages.index') }}">
+                    <a class="nav-link {{ request()->routeIs('admin.messages.*') ? 'active' : '' }}" data-nav-match="messages" href="{{ route('admin.messages.index') }}">
                         Messages
                         @php($unreadNavCount = \App\Models\ContactMessage::whereNull('read_at')->count())
                         @if ($unreadNavCount > 0)
@@ -39,14 +39,17 @@
                 </li>
                 @can('manage-users')
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}" href="{{ route('admin.users.index') }}">
+                        <a class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}" data-nav-match="users" href="{{ route('admin.users.index') }}">
                             Users
                         </a>
                     </li>
                 @endcan
             </ul>
 
-            <ul class="navbar-nav">
+            <ul class="navbar-nav align-items-md-center">
+                <li class="nav-item" id="nav-upload-status" style="display: none;">
+                    <span class="badge text-bg-primary">Uploading&hellip;</span>
+                </li>
                 <li class="nav-item">
                     <a class="nav-link" href="{{ route('home') }}" target="_blank" rel="noopener">View Site</a>
                 </li>
