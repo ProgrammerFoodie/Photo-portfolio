@@ -9,18 +9,34 @@
 </head>
 <body>
 
-    @include('partials.site-nav')
-
     @php
         $coverPath = \App\Models\Setting::get('profile_cover_path');
+        $coverPositionY = \App\Models\Setting::get('profile_cover_position_y', '50');
+        $headerHeight = \App\Models\Setting::get('profile_header_height', '280');
     @endphp
-    <header class="profile-header" @if ($coverPath) style="background-image: url('{{ route('profile.cover') }}');" @endif>
-        <div class="container">
-            <h1 class="page-hero-title mb-0">{{ $title }}</h1>
-        </div>
-    </header>
+    @if (\App\Support\Theme::is('version-2'))
+        <header class="page-hero @if ($coverPath) has-cover @endif"
+                style="height: {{ $headerHeight }}px; @if ($coverPath) background-image: url('{{ route('profile.cover') }}'); background-position: center {{ $coverPositionY }}%; @endif">
+            <div class="container">
+                <div class="hero-eyebrow">
+                    <span>&#10022;</span> {{ \App\Models\Setting::get('site_title') }}
+                </div>
+                <h1>{{ $title }}</h1>
+            </div>
+        </header>
 
-    @include('partials.site-tabs')
+        @include('partials.hero-subnav', ['showLogin' => true])
+    @else
+        @include('partials.site-nav')
+        <header class="profile-header"
+                style="height: {{ $headerHeight }}px; @if ($coverPath) background-image: url('{{ route('profile.cover') }}'); background-position: center {{ $coverPositionY }}%; @endif">
+            <div class="container">
+                <h1 class="page-hero-title mb-0">{{ $title }}</h1>
+            </div>
+        </header>
+
+        @include('partials.site-tabs')
+    @endif
 
     <main class="container py-4" style="min-height: 40vh;">
         <p class="text-body-secondary" style="max-width: 45rem;">{!! nl2br(e($body)) !!}</p>

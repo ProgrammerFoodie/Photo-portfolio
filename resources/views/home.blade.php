@@ -9,18 +9,20 @@
 </head>
 <body>
 
-    @include('partials.site-nav', ['overlay' => \App\Support\Theme::is('version-2')])
-
     @php
         $coverPath = \App\Models\Setting::get('profile_cover_path');
+        $coverPositionY = \App\Models\Setting::get('profile_cover_position_y', '50');
+        $headerHeight = \App\Models\Setting::get('profile_header_height', '280');
     @endphp
 
     @if (\App\Support\Theme::is('version-2'))
         <section class="hero-grid">
             <div class="hero-tile hero-headline">
-                <div class="hero-eyebrow">
-                    <span>&#10022;</span> {{ \App\Models\Setting::get('site_title') }}
-                </div>
+                @if (\App\Models\Setting::get('profile_display_name'))
+                    <div class="hero-eyebrow">
+                        <span>&#10022;</span> {{ \App\Models\Setting::get('profile_display_name') }}
+                    </div>
+                @endif
                 <h1>{{ \App\Models\Setting::get('profile_handle') }}</h1>
                 @if (\App\Models\Setting::get('profile_bio'))
                     <p class="hero-tagline">{{ \App\Models\Setting::get('profile_bio') }}</p>
@@ -42,29 +44,11 @@
             </div>
         </section>
 
-        <nav class="hero-subnav">
-            <div class="container">
-                <ul class="hero-subnav-list">
-                    <li>
-                        <a href="{{ route('home') }}" class="{{ request()->routeIs('home', 'albums.show') ? 'active' : '' }}">
-                            <i class="bi bi-images"></i> Albums
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{{ route('about') }}" class="{{ request()->routeIs('about') ? 'active' : '' }}">
-                            <i class="bi bi-person"></i> About
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{{ route('contact') }}" class="{{ request()->routeIs('contact') ? 'active' : '' }}">
-                            <i class="bi bi-envelope"></i> Contact
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </nav>
+        @include('partials.hero-subnav', ['showLogin' => true])
     @else
-        <header class="profile-header" @if ($coverPath) style="background-image: url('{{ route('profile.cover') }}');" @endif>
+        @include('partials.site-nav')
+        <header class="profile-header"
+                style="height: {{ $headerHeight }}px; @if ($coverPath) background-image: url('{{ route('profile.cover') }}'); background-position: center {{ $coverPositionY }}%; @endif">
             <div class="container">
                 <div class="profile-handle">{{ \App\Models\Setting::get('profile_handle') }}</div>
                 @if (\App\Models\Setting::get('profile_display_name'))

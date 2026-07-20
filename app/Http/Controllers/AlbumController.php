@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreAlbumRequest;
 use App\Http\Requests\UpdateAlbumRequest;
+use App\Models\ActivityLog;
 use App\Models\Album;
 use App\Services\DashboardStatsService;
 use Illuminate\Http\RedirectResponse;
@@ -64,6 +65,7 @@ class AlbumController extends Controller
         ]);
 
         $this->stats->clearCache();
+        ActivityLog::log('album.created', "Created album \"{$album->name}\"");
 
         return redirect()
             ->route('admin.albums.create')
@@ -109,6 +111,7 @@ class AlbumController extends Controller
         ]);
 
         $this->stats->clearCache();
+        ActivityLog::log('album.updated', "Updated album \"{$album->name}\"");
 
         return redirect()
             ->route('admin.albums.index')
@@ -121,6 +124,7 @@ class AlbumController extends Controller
         $album->delete();
 
         $this->stats->clearCache();
+        ActivityLog::log('album.deleted', "Deleted album \"{$name}\"");
 
         return redirect()
             ->route('admin.albums.index')

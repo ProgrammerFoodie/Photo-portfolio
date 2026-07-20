@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreUserRequest;
+use App\Models\ActivityLog;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Hash;
@@ -31,9 +32,19 @@ class UserController extends Controller
             'password' => Hash::make($request->string('password')->toString()),
         ]);
 
+        ActivityLog::log('user.created', "Created user \"{$user->username}\"");
+
         return redirect()
             ->route('admin.users.index')
             ->with('status', "User \"{$user->username}\" created successfully.");
+    }
+
+    public function show(User $user): View
+    {
+        return view('admin.users.show', [
+            'viewedUser' => $user,
+            'logs' => $user->activityLogs()->paginate(25),
+        ]);
     }
 
     public function destroy(User $user): RedirectResponse
@@ -46,6 +57,8 @@ class UserController extends Controller
 
         $username = $user->username;
         $user->delete();
+
+        ActivityLog::log('user.deleted', "Deleted user \"{$username}\"");
 
         return redirect()
             ->route('admin.users.index')

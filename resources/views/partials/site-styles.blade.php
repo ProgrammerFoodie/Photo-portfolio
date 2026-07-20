@@ -119,6 +119,9 @@
         letter-spacing: -0.02em;
     }
 
+    /* Height comes from the admin-configurable inline style (Setting
+       profile_header_height) rather than a fixed clamp(), so the admin
+       preview and the real page always match exactly. */
     .profile-header {
         position: relative;
         background-color: var(--bg-elevated);
@@ -126,7 +129,6 @@
         background-position: center;
         display: flex;
         align-items: flex-end;
-        min-height: clamp(220px, 38vh, 420px);
         padding: 2rem 0 1.75rem;
         overflow: hidden;
     }

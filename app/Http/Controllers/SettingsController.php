@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActivityLog;
 use App\Models\Setting;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -26,21 +27,25 @@ class SettingsController extends Controller
     public function update(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'site_title' => ['required', 'string', 'max:100'],
+            'site_title' => ['nullable', 'string', 'max:100'],
             'footer_text' => ['nullable', 'string', 'max:300'],
-            'about_title' => ['required', 'string', 'max:100'],
+            'about_title' => ['nullable', 'string', 'max:100'],
             'about_body' => ['nullable', 'string', 'max:5000'],
-            'contact_title' => ['required', 'string', 'max:100'],
+            'contact_title' => ['nullable', 'string', 'max:100'],
             'contact_body' => ['nullable', 'string', 'max:5000'],
             'social_links' => ['nullable', 'array'],
             'social_links.*.label' => ['nullable', 'string', 'max:50'],
             'social_links.*.url' => ['nullable', 'string', 'max:500', 'url'],
-            'profile_handle' => ['required', 'string', 'max:50'],
+            'profile_handle' => ['nullable', 'string', 'max:50'],
             'profile_display_name' => ['nullable', 'string', 'max:100'],
             'profile_bio' => ['nullable', 'string', 'max:300'],
             'cover_image' => ['nullable', 'image', 'max:8192'],
+            'profile_cover_position_y' => ['nullable', 'integer', 'min:0', 'max:100'],
+            'profile_header_height' => ['nullable', 'integer', 'min:120', 'max:800'],
             'theme' => ['required', 'string', Rule::in(array_keys(config('themes')))],
         ]);
+
+        $previousTheme = Setting::get('theme');
 
         foreach ($validated as $key => $value) {
             if (in_array($key, ['social_links', 'cover_image'], true)) {
@@ -48,6 +53,13 @@ class SettingsController extends Controller
             }
 
             Setting::set($key, $value);
+        }
+
+        if ($previousTheme !== $validated['theme']) {
+            $themeLabel = config('themes')[$validated['theme']] ?? $validated['theme'];
+            ActivityLog::log('theme.changed', "Changed theme to \"{$themeLabel}\"");
+        } else {
+            ActivityLog::log('settings.updated', 'Updated site settings');
         }
 
         $socialLinks = collect($validated['social_links'] ?? [])
@@ -72,6 +84,7 @@ class SettingsController extends Controller
             $newPath = $disk->putFileAs(self::COVER_DIR, $request->file('cover_image'), $filename);
 
             Setting::set('profile_cover_path', $newPath);
+            Setting::set('profile_cover_position_y', '50');
         }
 
         return redirect()

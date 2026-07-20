@@ -7,7 +7,7 @@
         // Jump straight to whichever tab has a validation error, so failed
         // input isn't left hidden behind another tab after a failed save.
         $tabFields = [
-            'header' => ['cover_image', 'profile_handle', 'profile_display_name', 'profile_bio'],
+            'header' => ['cover_image', 'profile_handle', 'profile_display_name', 'profile_bio', 'profile_header_height'],
             'about' => ['about_title', 'about_body'],
             'contact' => ['contact_title', 'contact_body'],
             'social' => ['social_links'],
@@ -94,7 +94,7 @@
                                 <label for="site_title" class="form-label">Site Title</label>
                                 <input type="text" name="site_title" id="site_title"
                                        value="{{ old('site_title', $settings['site_title']) }}"
-                                       class="form-control" required>
+                                       class="form-control">
                                 <div class="form-text card-muted">Shown in the browser tab and the top navigation bar.</div>
                             </div>
 
@@ -113,22 +113,53 @@
                             </div>
 
                             <div class="mb-3">
+                                <label for="profile_header_height" class="form-label">Header Height (px)</label>
+                                <input type="number" name="profile_header_height" id="profile_header_height"
+                                       value="{{ old('profile_header_height', $settings['profile_header_height']) }}"
+                                       min="120" max="800" class="form-control" style="max-width: 10rem;">
+                                <div class="form-text card-muted">
+                                    Height of the header banner on the homepage and About/Contact pages. The preview below
+                                    matches this exactly.
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
                                 <label for="cover_image" class="form-label">Cover Image</label>
                                 @if ($settings['profile_cover_path'])
-                                    <div class="mb-2">
-                                        <img src="{{ route('profile.cover') }}" alt="Current cover"
-                                             style="max-width: 100%; max-height: 10rem; border-radius: 0.5rem; display: block;">
+                                    {{-- Full-bleed preview: breaks out of the centered form card to span
+                                         the full viewport width, exactly like the real page header. Uses
+                                         the identical CSS (background-size: cover + background-position-y)
+                                         so the crop matches the live site pixel-for-pixel at this browser
+                                         width. --}}
+                                    <div style="width: 100vw; position: relative; left: 50%; margin-left: -50vw;">
+                                        <div id="coverRepositionFrame"
+                                             data-cover-url="{{ route('profile.cover') }}"
+                                             style="position: relative; width: 100%; height: {{ $settings['profile_header_height'] }}px; overflow: hidden; background-image: url('{{ route('profile.cover') }}'); background-size: cover; background-position: center {{ $settings['profile_cover_position_y'] }}%; cursor: grab; touch-action: none; user-select: none;">
+                                            <div style="position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, rgba(20, 14, 10, 0.45) 0%, rgba(20, 14, 10, 0.8) 100%);"></div>
+                                            <div class="container" style="position: absolute; inset: 0; display: flex; align-items: flex-end; padding-bottom: 1.75rem; pointer-events: none;">
+                                                <div>
+                                                    <div style="color: var(--brand); font-size: 0.72rem; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; margin-bottom: 0.4rem;">&#10022; {{ $settings['site_title'] }}</div>
+                                                    <div style="color: #fff; font-weight: 800; font-size: clamp(2rem, 5vw, 3rem); line-height: 1.05; letter-spacing: -0.02em;">{{ $settings['profile_handle'] ?: 'Preview' }}</div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
+                                    <div class="form-text card-muted mt-2">
+                                        Live preview of your site header at this browser width &mdash; drag the image
+                                        up/down to choose which part shows. What you see here is what visitors see.
+                                    </div>
+                                    <input type="hidden" name="profile_cover_position_y" id="profile_cover_position_y"
+                                           value="{{ old('profile_cover_position_y', $settings['profile_cover_position_y']) }}">
                                 @endif
-                                <input type="file" name="cover_image" id="cover_image" accept="image/*" class="form-control">
-                                <div class="form-text card-muted">Used as the background of the homepage header. Leave blank to keep the current image.</div>
+                                <input type="file" name="cover_image" id="cover_image" accept="image/*" class="form-control mt-2">
+                                <div class="form-text card-muted">Uploading a new image resets its position to centered. Leave blank to keep the current image.</div>
                             </div>
 
                             <div class="mb-3">
                                 <label for="profile_handle" class="form-label">Handle</label>
                                 <input type="text" name="profile_handle" id="profile_handle"
                                        value="{{ old('profile_handle', $settings['profile_handle']) }}"
-                                       class="form-control" required>
+                                       class="form-control">
                             </div>
 
                             <div class="mb-3">
@@ -150,7 +181,7 @@
                                 <label for="about_title" class="form-label">About Page Title</label>
                                 <input type="text" name="about_title" id="about_title"
                                        value="{{ old('about_title', $settings['about_title']) }}"
-                                       class="form-control" required>
+                                       class="form-control">
                             </div>
 
                             <div class="mb-3">
@@ -165,7 +196,7 @@
                                 <label for="contact_title" class="form-label">Contact Page Title</label>
                                 <input type="text" name="contact_title" id="contact_title"
                                        value="{{ old('contact_title', $settings['contact_title']) }}"
-                                       class="form-control" required>
+                                       class="form-control">
                             </div>
 
                             <div class="mb-3">
@@ -269,6 +300,103 @@
                     button.closest('.social-link-row').remove();
                 }
             });
+        })();
+
+        (function () {
+            const frame = document.getElementById('coverRepositionFrame');
+            if (!frame) {
+                return;
+            }
+
+            const hiddenInput = document.getElementById('profile_cover_position_y');
+            const heightInput = document.getElementById('profile_header_height');
+
+            // The preview is rendered with the exact same CSS as the real page
+            // header (background-size: cover + background-position-y), so the
+            // crop is identical at a given browser width. Dragging only changes
+            // the vertical position percentage. We need the image's natural
+            // dimensions to know how many pixels of drag map to a full 0->100%.
+            let naturalW = 0;
+            let naturalH = 0;
+            const probe = new Image();
+            probe.onload = () => { naturalW = probe.naturalWidth; naturalH = probe.naturalHeight; };
+            probe.src = frame.dataset.coverUrl;
+
+            // With background-size: cover, the image is scaled up so it fully
+            // covers the frame, then the excess height (the overflow) is what
+            // background-position-y slides through. This overflow, in on-screen
+            // pixels, is exactly how far a drag can move from 0% to 100%.
+            function overflowPx() {
+                if (!naturalW || !naturalH) {
+                    return 0;
+                }
+                const w = frame.clientWidth;
+                const h = frame.clientHeight;
+                const scale = Math.max(w / naturalW, h / naturalH);
+                return Math.max(0, naturalH * scale - h);
+            }
+
+            function applyPercent(percent) {
+                const clamped = Math.min(100, Math.max(0, percent));
+                hiddenInput.value = Math.round(clamped);
+                frame.style.backgroundPosition = `center ${clamped}%`;
+            }
+
+            let dragging = false;
+            let startClientY = 0;
+            let startPercent = 50;
+
+            function pointerY(e) {
+                return e.touches ? e.touches[0].clientY : e.clientY;
+            }
+
+            function pointerDown(e) {
+                dragging = true;
+                startClientY = pointerY(e);
+                startPercent = parseInt(hiddenInput.value, 10) || 50;
+                frame.style.cursor = 'grabbing';
+                e.preventDefault();
+            }
+
+            function pointerMove(e) {
+                if (!dragging) {
+                    return;
+                }
+                const overflow = overflowPx();
+                if (overflow <= 0) {
+                    return;
+                }
+                // Dragging up (negative delta) reveals lower content, which is a
+                // higher position percentage -- hence the minus sign.
+                const delta = pointerY(e) - startClientY;
+                applyPercent(startPercent - (delta / overflow) * 100);
+                e.preventDefault();
+            }
+
+            function pointerUp() {
+                if (dragging) {
+                    dragging = false;
+                    frame.style.cursor = 'grab';
+                }
+            }
+
+            frame.addEventListener('mousedown', pointerDown);
+            frame.addEventListener('touchstart', pointerDown, { passive: false });
+            window.addEventListener('mousemove', pointerMove);
+            window.addEventListener('touchmove', pointerMove, { passive: false });
+            window.addEventListener('mouseup', pointerUp);
+            window.addEventListener('touchend', pointerUp);
+
+            // Live height changes: background-position % auto-recomputes against
+            // the new dimensions, so just resizing the frame is enough.
+            if (heightInput) {
+                heightInput.addEventListener('input', () => {
+                    const height = parseInt(heightInput.value, 10);
+                    if (height >= 120 && height <= 800) {
+                        frame.style.height = `${height}px`;
+                    }
+                });
+            }
         })();
     </script>
 </x-app-layout>

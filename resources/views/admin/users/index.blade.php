@@ -28,7 +28,7 @@
                     @forelse ($users as $user)
                         <tr>
                             <td class="ps-4">
-                                {{ $user->name }}
+                                <a href="{{ route('admin.users.show', $user) }}" class="link-primary">{{ $user->name }}</a>
                                 @if ($user->id === 1)
                                     <span class="badge text-bg-secondary ms-1">Super Admin</span>
                                 @endif
@@ -36,14 +36,17 @@
                             <td class="card-muted">{{ $user->username }}</td>
                             <td class="card-muted">{{ $user->email }}</td>
                             <td class="pe-4">
-                                @if ($user->id !== 1)
-                                    <form method="POST" action="{{ route('admin.users.destroy', $user) }}"
-                                          onsubmit="return confirm('Delete this user? This cannot be undone.');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-link link-danger p-0 border-0 align-baseline">Delete</button>
-                                    </form>
-                                @endif
+                                <div class="d-flex align-items-center gap-3">
+                                    <a href="{{ route('admin.users.show', $user) }}" class="link-primary">View</a>
+                                    @if ($user->id !== 1)
+                                        <form method="POST" action="{{ route('admin.users.destroy', $user) }}"
+                                              onsubmit="return confirm('Delete this user? This cannot be undone.');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-link link-danger p-0 border-0 align-baseline">Delete</button>
+                                        </form>
+                                    @endif
+                                </div>
                             </td>
                         </tr>
                     @empty

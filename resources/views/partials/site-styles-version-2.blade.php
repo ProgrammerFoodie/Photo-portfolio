@@ -117,9 +117,57 @@
         letter-spacing: -0.02em;
     }
 
+    /* About/Contact page header (version-2) -- same eyebrow + bold title
+       typography as the homepage hero, without the full-bleed photo grid.
+       Falls back to the flat bg-elevated color when there's no cover image.
+       Height comes from the admin-configurable inline style (Setting
+       profile_header_height); flex + bottom alignment keeps the title
+       sitting at the same spot regardless of that height. */
+    .page-hero {
+        position: relative;
+        background-color: var(--bg-elevated);
+        background-size: cover;
+        background-position: center;
+        border-bottom: 1px solid var(--border);
+        padding: 0 0 2rem;
+        overflow: hidden;
+        display: flex;
+        align-items: flex-end;
+    }
+
+    /* The faint border reads as a bright seam against a photo background,
+       so drop it there -- the gradient overlay already separates the
+       header from the subnav below it. */
+    .page-hero.has-cover {
+        border-bottom: 0;
+    }
+
+    .page-hero.has-cover::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(20, 14, 10, 0.55) 0%, rgba(20, 14, 10, 0.85) 100%);
+    }
+
+    .page-hero .container {
+        position: relative;
+        z-index: 1;
+    }
+
+    .page-hero h1 {
+        font-weight: 800;
+        font-size: clamp(2rem, 5vw, 3rem);
+        line-height: 1.05;
+        letter-spacing: -0.02em;
+        color: var(--accent);
+        margin: 0;
+    }
+
     /* Non-home pages (about/contact/album) keep the original full-bleed
        cover header markup -- restyled here to match, no template changes
        needed there. */
+    /* Height comes from the admin-configurable inline style (Setting
+       profile_header_height) rather than a fixed clamp(). */
     .profile-header {
         position: relative;
         background-color: var(--bg-elevated);
@@ -127,7 +175,6 @@
         background-position: center;
         display: flex;
         align-items: flex-end;
-        min-height: clamp(220px, 38vh, 420px);
         padding: 2rem 0 1.75rem;
         overflow: hidden;
     }
@@ -341,10 +388,14 @@
         border-bottom-color: var(--brand);
     }
 
-    /* Homepage-only secondary nav between the hero and the album grid --
-       subtle background, icons, roomier than the plain text site-tabs
-       used on other pages. */
+    /* The only nav bar on version-2 pages (home/about/contact) -- subtle
+       background, icons, roomier than the plain text site-tabs used on
+       the default theme. Sticky so it's still reachable once you've
+       scrolled past the hero/header into the page content. */
     .hero-subnav {
+        position: sticky;
+        top: 0;
+        z-index: 10;
         background-color: var(--bg-elevated);
         border-bottom: 1px solid var(--border);
     }
@@ -387,6 +438,20 @@
 
     .hero-subnav-list li a.active i {
         color: var(--brand);
+    }
+
+    /* Deliberately understated -- sits in the same bar as Albums/About/
+       Contact but shouldn't compete with them for attention. */
+    .hero-subnav-login {
+        display: inline-flex;
+        align-items: center;
+        color: var(--text-muted);
+        font-size: 1.2rem;
+        transition: color 0.15s ease;
+    }
+
+    .hero-subnav-login:hover {
+        color: var(--accent);
     }
 
     /* Square, tight-gap Instagram-style grid. Same .album-card/.album-thumb
@@ -617,28 +682,4 @@
         }
     }
 
-    /* Nav starts invisible and out of flow over the hero, then fades in
-       once the visitor scrolls past it (see site-nav.blade.php script). */
-    .nav-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        background: transparent !important;
-        backdrop-filter: none !important;
-        -webkit-backdrop-filter: none !important;
-        box-shadow: none !important;
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.3s ease;
-    }
-
-    .nav-overlay.nav-visible {
-        opacity: 1;
-        pointer-events: auto;
-        background-color: rgba(30, 24, 21, 0.72) !important;
-        backdrop-filter: blur(20px) saturate(180%) !important;
-        -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
-        box-shadow: 0 1px 0 rgba(255, 255, 255, 0.06) !important;
-    }
 </style>

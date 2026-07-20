@@ -26,6 +26,8 @@ class Setting extends Model
             'profile_display_name' => '',
             'profile_bio' => '',
             'profile_cover_path' => '',
+            'profile_cover_position_y' => '50',
+            'profile_header_height' => '280',
             'theme' => 'default',
         ];
     }

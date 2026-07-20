@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActivityLog;
 use App\Models\ContactMessage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
@@ -21,12 +22,17 @@ class ContactMessageController extends Controller
     {
         $message->markAsRead();
 
+        ActivityLog::log('message.viewed', "Viewed message from \"{$message->name}\"");
+
         return view('admin.messages.show', ['message' => $message]);
     }
 
     public function destroy(ContactMessage $message): RedirectResponse
     {
+        $name = $message->name;
         $message->delete();
+
+        ActivityLog::log('message.deleted', "Deleted message from \"{$name}\"");
 
         return redirect()
             ->route('admin.messages.index')

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\FinalizeUploadRequest;
 use App\Http\Requests\StoreChunkRequest;
+use App\Models\ActivityLog;
 use App\Models\Album;
 use App\Services\PhotoUploadService;
 use Illuminate\Http\JsonResponse;
@@ -46,6 +47,8 @@ class PhotoUploadController extends Controller
             album: $album,
             expectedTotalChunks: $request->integer('total_chunks'),
         );
+
+        ActivityLog::log('photo.uploaded', "Uploaded photo \"{$photo->original_filename}\" to album \"{$album->name}\"");
 
         return response()->json([
             'status' => 'uploaded',
