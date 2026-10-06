@@ -29,6 +29,14 @@ class PageController extends Controller
 
     public function submitContact(StoreContactMessageRequest $request): RedirectResponse
     {
+        // Honeypot: a hidden field real visitors never fill in. If it's
+        // present, silently pretend to succeed rather than tipping off the bot.
+        if ($request->filled('website')) {
+            return redirect()
+                ->route('contact')
+                ->with('status', 'Thanks for reaching out — your message has been sent.');
+        }
+
         ContactMessage::create($request->validated());
 
         return redirect()

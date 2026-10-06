@@ -25,9 +25,9 @@ class HomeController extends Controller
             'totalPhotos' => Photo::count(),
             'totalAlbums' => Album::count(),
             'totalDownloads' => Download::count(),
-            'heroPhotos' => Theme::is('version-2')
-                ? Photo::where('status', 'ready')->whereNotNull('thumbnail_path')->inRandomOrder()->limit(7)->get()
-                : collect(),
+            'heroPhoto' => Theme::is('version-2')
+                ? Photo::where('status', 'ready')->whereNotNull('thumbnail_path')->with('album')->inRandomOrder()->first()
+                : null,
         ]);
     }
 }

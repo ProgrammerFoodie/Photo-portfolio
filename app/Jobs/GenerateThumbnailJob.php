@@ -43,13 +43,24 @@ class GenerateThumbnailJob implements ShouldQueue
 
             $image->scaleDown(width: 600)->save($thumbnailFullPath, quality: 80);
 
-            $this->photo->update([
+            $update = [
                 'thumbnail_path' => $thumbnailRelativePath,
                 'width' => $width,
                 'height' => $height,
-                'captured_at' => $this->readCapturedAt($originalFullPath),
                 'status' => 'ready',
-            ]);
+            ];
+
+            // Only fall back to EXIF when nothing has already supplied a date.
+            // iCloud strips most EXIF from the derivatives it serves, but the
+            // shared-album API reports each photo's real capture time, so sync
+            // sets captured_at up front. Overwriting it here would null it out
+            // and break the album ordering, which sorts on
+            // COALESCE(captured_at, created_at).
+            if ($this->photo->captured_at === null) {
+                $update['captured_at'] = $this->readCapturedAt($originalFullPath);
+            }
+
+            $this->photo->update($update);
         } catch (\Throwable $e) {
             $this->photo->update(['status' => 'failed']);
             throw $e;

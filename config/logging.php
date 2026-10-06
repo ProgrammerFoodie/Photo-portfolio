@@ -73,6 +73,23 @@ return [
             'replace_placeholders' => true,
         ],
 
+        // iCloud sync runs from cron and the queue worker, where nobody is
+        // authenticated — ActivityLog::log() deliberately no-ops there, so
+        // sync history goes here instead of vanishing.
+        'icloud' => [
+            'driver' => 'daily',
+            // Own path so the test suite (which runs as admin) can be pointed
+            // elsewhere — otherwise it creates this file as admin and the queue
+            // worker, running as www-data, silently can't write to it.
+            'path' => storage_path(env('ICLOUD_LOG_FILE', 'logs/icloud-sync.log')),
+            // Deliberately NOT env('LOG_LEVEL'): production runs at "warning",
+            // which would discard every routine sync summary and leave a
+            // scheduled job with no history at all.
+            'level' => env('ICLOUD_LOG_LEVEL', 'info'),
+            'days' => 30,
+            'replace_placeholders' => true,
+        ],
+
         'slack' => [
             'driver' => 'slack',
             'url' => env('LOG_SLACK_WEBHOOK_URL'),

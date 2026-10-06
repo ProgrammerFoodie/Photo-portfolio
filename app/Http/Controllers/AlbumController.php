@@ -6,9 +6,12 @@ use App\Http\Requests\StoreAlbumRequest;
 use App\Http\Requests\UpdateAlbumRequest;
 use App\Models\ActivityLog;
 use App\Models\Album;
+use App\Models\Photo;
 use App\Services\DashboardStatsService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Number;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -74,9 +77,13 @@ class AlbumController extends Controller
 
     public function edit(Album $album): View
     {
+        $photos = $album->photos()->orderBy('sort_order')->get();
+
         return view('admin.albums.edit', [
             'album' => $album,
-            'photos' => $album->photos()->orderBy('sort_order')->get(),
+            'photos' => $photos,
+            'pinnedPhotos' => $photos->where('sort_order', '>', 0)->sortBy('sort_order')->values(),
+            'unpinnedPhotos' => $photos->where('sort_order', 0)->values(),
             'parentOptions' => Album::query()
                 ->whereNull('parent_id')
                 ->where('id', '!=', $album->id)
@@ -98,6 +105,36 @@ class AlbumController extends Controller
         return redirect()
             ->route('admin.albums.edit', $album)
             ->with('status', 'Thumbnail updated.');
+    }
+
+    /**
+     * Persists the pinned set for the gallery in one shot: pins/reorders
+     * everything in photo_ids to sort_order 1..N (in the given order), and
+     * unpins (sort_order = 0) any previously-pinned photo left out of the
+     * list. The admin UI batches all pin/unpin/reorder edits client-side and
+     * calls this once on "Save Order", rather than round-tripping per click.
+     */
+    public function reorderPinnedPhotos(Request $request, Album $album): JsonResponse
+    {
+        $request->validate([
+            'photo_ids' => ['present', 'array'],
+            'photo_ids.*' => ['integer', 'exists:photos,id'],
+        ]);
+
+        $ids = $request->input('photo_ids');
+
+        DB::transaction(function () use ($album, $ids) {
+            foreach ($ids as $index => $photoId) {
+                $album->photos()->where('id', $photoId)->update(['sort_order' => $index + 1]);
+            }
+
+            $album->photos()
+                ->where('sort_order', '>', 0)
+                ->whereNotIn('id', $ids)
+                ->update(['sort_order' => 0]);
+        });
+
+        return response()->json(['status' => 'ok']);
     }
 
     public function update(UpdateAlbumRequest $request, Album $album): RedirectResponse

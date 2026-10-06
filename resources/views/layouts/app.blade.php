@@ -131,6 +131,18 @@
                 border-color: var(--brand-hover);
             }
 
+            /* Bootstrap's own disabled-state styling uses separate
+               --bs-btn-disabled-bg/--bs-btn-disabled-border-color variables
+               (defaulting to Bootstrap blue) rather than inheriting the
+               enabled-state background-color/border-color above -- so a
+               disabled .btn-primary reverted to blue without this. */
+            .btn-primary:disabled,
+            .btn-primary.disabled {
+                background-color: var(--brand);
+                border-color: var(--brand);
+                opacity: 0.65;
+            }
+
             .btn-outline-light {
                 --bs-btn-color: var(--accent);
                 --bs-btn-border-color: var(--border);
@@ -170,9 +182,12 @@
             }
 
 
+            /* auto-fill + 1fr stretches each row's tiles to fill the full
+               card width evenly (no leftover gap on the right), instead of
+               fixed-size tiles leaving whatever doesn't divide evenly. */
             .photo-pick-grid {
-                display: flex;
-                flex-wrap: wrap;
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
                 gap: 1.25rem;
                 padding-top: 0.25rem;
             }
@@ -191,23 +206,19 @@
 
             .photo-pick,
             .photo-pick-pending {
-                width: 32px;
-                height: 32px;
+                width: 100%;
+                aspect-ratio: 1 / 1;
                 object-fit: cover;
-                border-radius: 4px;
+                border-radius: 6px;
                 border: 2px solid var(--border);
                 display: block;
                 background-color: var(--bg-elevated-2);
-                transition: transform 0.15s ease, border-color 0.15s ease;
+                transition: border-color 0.15s ease;
             }
 
             .photo-pick-wrap:hover .photo-pick,
             .photo-pick-wrap:hover .photo-pick-pending {
-                transform: scale(5);
-                position: relative;
-                z-index: 5;
                 border-color: var(--brand);
-                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
             }
 
             .photo-pick-wrap.is-cover .photo-pick,
@@ -227,6 +238,80 @@
                 border-radius: 3px;
                 z-index: 6;
                 pointer-events: none;
+            }
+
+            .pinned-photo-list {
+                list-style: none;
+                margin: 0;
+                padding: 0;
+                display: flex;
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .pinned-photo-item {
+                display: flex;
+                align-items: center;
+                gap: 0.6rem;
+                padding: 0.4rem 0.6rem;
+                border: 1px solid var(--border);
+                border-radius: 6px;
+                background: var(--bg-elevated-2);
+                cursor: grab;
+            }
+
+            .pinned-photo-item:active {
+                cursor: grabbing;
+            }
+
+            .pinned-photo-handle {
+                color: var(--card-muted, #888);
+                line-height: 1;
+            }
+
+            .pinned-photo-item img {
+                width: 40px;
+                height: 40px;
+                object-fit: cover;
+                border-radius: 4px;
+                flex-shrink: 0;
+            }
+
+            .pinned-photo-name {
+                flex: 1;
+                font-size: 0.85rem;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            .photo-pin-form {
+                position: absolute;
+                inset: 0;
+                display: flex;
+                align-items: flex-end;
+                justify-content: center;
+                opacity: 0;
+                transition: opacity 0.15s ease;
+                pointer-events: none;
+            }
+
+            .photo-pick-wrap:hover .photo-pin-form {
+                opacity: 1;
+                pointer-events: auto;
+                z-index: 6;
+            }
+
+            .photo-pin-btn {
+                font-size: 0.6rem;
+                font-weight: 600;
+                padding: 0.05rem 0.35rem;
+                border-radius: 3px;
+                border: 0;
+                background: var(--brand);
+                color: #ffffff;
+                cursor: pointer;
+                margin-bottom: 2px;
             }
         </style>
     </head>

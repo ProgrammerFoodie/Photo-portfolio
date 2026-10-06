@@ -24,6 +24,10 @@
         <env name="BROADCAST_CONNECTION" value="null"/>
         <env name="CACHE_STORE" value="array"/>
         <env name="DB_CONNECTION" value="sqlite"/>
+        <!-- Keep test runs out of the real sync log: this suite runs as admin,
+             and a log file it creates becomes unwritable for the www-data
+             queue worker. -->
+        <env name="ICLOUD_LOG_FILE" value="logs/testing/icloud-sync.log"/>
         <env name="DB_DATABASE" value=":memory:"/>
         <env name="DB_URL" value=""/>
         <env name="MAIL_MAILER" value="array"/>

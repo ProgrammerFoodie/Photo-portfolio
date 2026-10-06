@@ -2,6 +2,9 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+{{-- Anton + IBM Plex Mono (contact-sheet redesign) are loaded from
+     home.blade.php itself, not here -- that design is home-page-only
+     for now, and this partial is shared by every version-2 page. --}}
 
 <style>
     :root {
@@ -454,12 +457,14 @@
         color: var(--accent);
     }
 
-    /* Square, tight-gap Instagram-style grid. Same .album-card/.album-thumb
-       markup as the default theme -- only the visuals change here. */
+    /* Square, tight-gap grid -- used only by the Album page's sub-album
+       list within version-2 (Home's overview grid uses .cs-tile instead).
+       Restyled to the contact-sheet tokens; markup/structure unchanged. */
     .album-card {
         position: relative;
-        background-color: var(--bg-elevated);
-        border-radius: 0.75rem;
+        background-color: #e2e4e0;
+        border: 1px solid var(--cs-rule, rgba(21, 24, 26, 0.16));
+        border-radius: 0;
         overflow: hidden;
         transition: transform 0.15s ease;
         height: 100%;
@@ -481,9 +486,18 @@
             flex-direction: column;
             justify-content: flex-end;
             padding: 0.75rem;
-            background: linear-gradient(to top, rgba(10, 6, 4, 0.9), rgba(10, 6, 4, 0.3) 55%, transparent);
+            background: linear-gradient(to top, rgba(10, 11, 10, 0.88) 0%, rgba(10, 11, 10, 0.4) 60%, transparent 100%);
             opacity: 0;
             transition: opacity 0.2s ease;
+        }
+
+        .album-card-body .album-title,
+        .album-card-body .album-meta {
+            color: #fff;
+        }
+
+        .album-card-body .album-meta {
+            color: rgba(255, 255, 255, 0.72);
         }
 
         .album-card:hover .album-card-body {
@@ -496,7 +510,7 @@
         width: 100%;
         object-fit: cover;
         display: block;
-        background-color: var(--bg-elevated-2);
+        background-color: #e2e4e0;
     }
 
     .album-thumb-placeholder {
@@ -505,19 +519,19 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background: var(--bg-elevated-2);
-        color: var(--text-tertiary);
+        background: #e2e4e0;
+        color: var(--cs-ink-faint, rgba(21, 24, 26, 0.38));
     }
 
     .album-title {
-        color: var(--accent);
+        color: var(--cs-ink, #15181a);
         font-weight: 600;
         font-size: 0.95rem;
         margin-bottom: 0.15rem;
     }
 
     .album-meta {
-        color: var(--text-muted);
+        color: var(--cs-ink-soft, rgba(21, 24, 26, 0.62));
         font-size: 0.8rem;
     }
 
@@ -534,66 +548,6 @@
         text-align: center;
     }
 
-    /* Full-bleed homepage hero: a fixed, deliberately composed photo
-       mosaic (not an auto-packed tile grid) with one cell replaced by
-       the site's headline. Every cell of the 4x3 grid is explicitly
-       assigned to a specific photo/headline below, so it always fills
-       exactly 100vh with zero gaps -- regardless of viewport size --
-       instead of depending on how many photos happen to be available.
-       Kept sparse (7 photos) on purpose -- fewer, bigger tiles read as
-       a deliberate composition rather than a busy tiled wall. */
-    .hero-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        grid-template-rows: repeat(3, 1fr);
-        gap: 4px;
-        height: 100vh;
-        overflow: hidden;
-        position: relative;
-        background-color: var(--bg);
-    }
-
-    .hero-tile {
-        display: block;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .hero-photo img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        display: block;
-        transition: transform 0.5s ease;
-    }
-
-    .hero-photo:hover img {
-        transform: scale(1.05);
-    }
-
-    .hero-headline {
-        background-color: var(--bg-elevated);
-        border: 1px solid var(--border);
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        padding: clamp(1.5rem, 4vw, 3rem);
-    }
-
-    /* Explicit cell assignments only apply at desktop widths -- mobile
-       uses a simple auto-flowing 2-column grid instead (see below). */
-    @media (min-width: 768px) {
-        .hero-headline { grid-column: 2 / 4; grid-row: 1 / 3; }
-
-        .hero-photo:nth-of-type(1) { grid-column: 1; grid-row: 1 / 3; }
-        .hero-photo:nth-of-type(2) { grid-column: 4; grid-row: 1; }
-        .hero-photo:nth-of-type(3) { grid-column: 4; grid-row: 2; }
-        .hero-photo:nth-of-type(4) { grid-column: 1; grid-row: 3; }
-        .hero-photo:nth-of-type(5) { grid-column: 2; grid-row: 3; }
-        .hero-photo:nth-of-type(6) { grid-column: 3; grid-row: 3; }
-        .hero-photo:nth-of-type(7) { grid-column: 4; grid-row: 3; }
-    }
-
     .hero-eyebrow {
         display: flex;
         align-items: center;
@@ -606,80 +560,512 @@
         margin-bottom: 1rem;
     }
 
-    .hero-headline h1 {
-        font-weight: 800;
-        font-size: clamp(2rem, 5vw, 3.5rem);
-        line-height: 1.05;
-        letter-spacing: -0.02em;
-        color: var(--accent);
-        margin: 0 0 1rem;
+    /* ==========================================================
+       Contact-sheet redesign -- Home page only.
+       Namespaced with a `cs-` prefix so nothing here can collide
+       with the rules above (shared by About/Contact/Album), and so
+       this whole block is easy to find/remove as one unit.
+       See docs/contact-sheet-implementation-plan.md.
+       ========================================================== */
+    :root {
+        --cs-lightbox: #f2f4f1;
+        --cs-ink: #15181a;
+        --cs-ink-soft: rgba(21, 24, 26, 0.62);
+        --cs-ink-faint: rgba(21, 24, 26, 0.38);
+        --cs-grease: #a91f28;
+        --cs-rule: rgba(21, 24, 26, 0.16);
     }
 
-    .hero-tagline {
-        color: var(--text-muted);
-        max-width: 26rem;
-        margin-bottom: 1.5rem;
+    body.cs-home {
+        background: var(--cs-lightbox);
+        color: var(--cs-ink);
+        font-family: 'IBM Plex Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
     }
 
-    .hero-meta {
+    /* Sprocket rails -- fixed top/bottom chrome standing in for a film
+       strip's perforations. Home-only for now (see the plan doc's
+       "chrome scope" decision); every other version-2 page still uses
+       partials/hero-subnav.blade.php, untouched. */
+    .cs-rail {
+        position: fixed;
+        left: 0;
+        right: 0;
+        height: 22px;
+        z-index: 50;
+        background: var(--cs-ink);
         display: flex;
-        gap: 0.75rem;
-        color: var(--text-tertiary);
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        font-size: 0.78rem;
-    }
-
-    .hero-scroll-cue {
-        position: absolute;
-        bottom: 1.5rem;
-        left: 50%;
-        transform: translateX(-50%);
-        display: flex;
-        flex-direction: column;
         align-items: center;
-        gap: 0.3rem;
-        color: var(--accent);
-        text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
-        text-transform: uppercase;
+    }
+
+    .cs-rail.top { top: 0; }
+    .cs-rail.bottom { bottom: 0; }
+
+    .cs-rail .cs-holes {
+        flex: 1;
+        align-self: stretch;
+        background-image: repeating-radial-gradient(circle at 11px 11px, var(--cs-lightbox) 0 4px, transparent 4px 22px);
+        background-size: 22px 22px;
+    }
+
+    .cs-rail .cs-counter {
+        flex-shrink: 0;
+        padding: 0 14px;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--cs-ink);
+        color: var(--cs-lightbox);
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+    }
+
+    .cs-rail .cs-counter .n { color: #e8a4a8; }
+
+    /* Identity strip -- this page's entire nav chrome (no traditional
+       navbar in this design). */
+    .cs-identity {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 10px;
+        /* The top rail is position:fixed (out of flow) -- without this,
+           the identity strip renders at y:0 and sits hidden underneath
+           it, since its own content is roughly the rail's height. */
+        padding: 44px clamp(20px, 5vw, 56px) 0;
+        margin-bottom: clamp(32px, 6vh, 64px);
+    }
+
+    .cs-identity .cs-mark {
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: 0.14em;
+        color: var(--cs-ink);
+    }
+
+    .cs-identity nav { display: flex; gap: 22px; }
+
+    .cs-identity nav a {
+        font-size: 11px;
         letter-spacing: 0.1em;
-        font-size: 0.7rem;
-        z-index: 2;
-        animation: hero-scroll-bounce 2s infinite;
+        text-transform: uppercase;
+        color: var(--cs-ink-soft);
+        padding: 4px 0;
+    }
+
+    .cs-identity nav a:hover,
+    .cs-identity nav a.active { color: var(--cs-grease); }
+
+    /* No top padding here -- .cs-identity (which comes right before this
+       in the DOM) already clears the fixed top rail. */
+
+    /* Grease-pencil mark -- hand-drawn double-loop circle that draws
+       itself on via stroke-dashoffset. Used on the hero feature (auto,
+       shortly after load) and on grid tiles (on hover/focus). This SVG
+       shape is intentionally not a perfect circle -- keep as-is. */
+    .cs-grease-mark {
+        position: absolute;
+        inset: -9%;
+        width: 118%;
+        height: 118%;
+        pointer-events: none;
+        overflow: visible;
+    }
+
+    .cs-grease-mark ellipse {
+        fill: none;
+        stroke: var(--cs-grease);
+        stroke-width: 2.4;
+        stroke-linecap: round;
+        stroke-dasharray: 100;
+        stroke-dashoffset: 100;
+        transition: stroke-dashoffset .6s cubic-bezier(.3, .7, .2, 1);
+    }
+
+    .cs-grease-mark ellipse:nth-child(2) {
+        transition-delay: .1s;
+        stroke-width: 2;
+    }
+
+    .cs-hero-feature.is-marked .cs-grease-mark ellipse,
+    .cs-tile:hover .cs-grease-mark ellipse,
+    .cs-tile:focus-visible .cs-grease-mark ellipse {
+        stroke-dashoffset: 0;
+    }
+
+    /* Film grain -- applied only to individual photo elements (a
+       wrapping position:relative element, never the <img> itself),
+       never to the page background. */
+    .cs-grain { position: relative; }
+
+    .cs-grain::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        opacity: 0.15;
+        mix-blend-mode: overlay;
+        pointer-events: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+        background-size: 120px 120px;
+    }
+
+    /* Hero */
+    .cs-hero {
+        display: grid;
+        grid-template-columns: 0.85fr 1.3fr;
+        gap: clamp(24px, 5vw, 64px);
+        align-items: center;
+        padding: 0 clamp(20px, 5vw, 56px) clamp(48px, 8vh, 88px);
+    }
+
+    .cs-hero-text .eyebrow {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 11px;
+        letter-spacing: .14em;
+        text-transform: uppercase;
+        color: var(--cs-ink-soft);
+        margin-bottom: 14px;
+    }
+
+    .cs-hero-text h1 {
+        font-family: 'Anton', 'Arial Narrow', sans-serif;
+        text-transform: uppercase;
+        font-size: clamp(2.6rem, 7vw, 5.4rem);
+        line-height: .95;
+        letter-spacing: .01em;
+        margin: 0 0 20px;
+    }
+
+    .cs-hero-text p {
+        color: var(--cs-ink-soft);
+        max-width: 32rem;
+        font-size: 14px;
+        line-height: 1.7;
+        margin: 0 0 28px;
+    }
+
+    .cs-hero-stats {
+        display: flex;
+        gap: 24px;
+        font-size: 11px;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+        color: var(--cs-ink-faint);
+    }
+
+    .cs-hero-feature { position: relative; }
+
+    .cs-hero-feature-img {
+        display: block;
+        aspect-ratio: 4 / 3;
+        width: 100%;
+        overflow: hidden;
+        background: #e2e4e0;
+        position: relative;
+        border: 1px solid var(--cs-rule);
+    }
+
+    .cs-hero-feature-img img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .cs-hero-feature-tag {
+        position: absolute;
+        left: -14px;
+        bottom: -14px;
+        background: var(--cs-lightbox);
+        border: 1px solid var(--cs-ink);
+        padding: 9px 16px;
+        transform: rotate(-3deg);
+        font-size: 11px;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+        font-weight: 600;
         pointer-events: none;
     }
 
-    @keyframes hero-scroll-bounce {
-        0%, 100% { transform: translate(-50%, 0); }
-        50% { transform: translate(-50%, 6px); }
+    /* Services ticker -- infinite horizontal scroll, content duplicated
+       once in the markup for a seamless loop (-50% is exactly one copy). */
+    .cs-ticker {
+        border-top: 1px solid var(--cs-rule);
+        border-bottom: 1px solid var(--cs-rule);
+        padding: 16px 0;
+        overflow: hidden;
+        margin-bottom: clamp(48px, 8vh, 88px);
+    }
+
+    .cs-ticker-track {
+        display: flex;
+        gap: 48px;
+        white-space: nowrap;
+        width: max-content;
+        animation: cs-ticker-scroll 28s linear infinite;
+    }
+
+    .cs-ticker-track span {
+        font-size: 13px;
+        letter-spacing: .06em;
+        text-transform: uppercase;
+        color: var(--cs-ink-soft);
+    }
+
+    .cs-ticker-track span::after {
+        content: '\2014';
+        margin-left: 48px;
+        color: var(--cs-ink-faint);
+    }
+
+    @keyframes cs-ticker-scroll {
+        from { transform: translateX(0); }
+        to { transform: translateX(-50%); }
+    }
+
+    /* Portfolio grid -- one square tile per album (cropped covers are
+       fine here; the "no crop" rule is specific to the Album page's
+       own photo grid, not this overview). */
+    .cs-sheet-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        flex-wrap: wrap;
+        gap: 12px;
+        padding: 0 clamp(20px, 5vw, 56px);
+        margin-bottom: 20px;
+    }
+
+    .cs-sheet-head h2 {
+        font-family: 'Anton', 'Arial Narrow', sans-serif;
+        text-transform: uppercase;
+        font-size: clamp(1.6rem, 4vw, 2.4rem);
+        margin: 0;
+    }
+
+    .cs-sheet-head .roll {
+        font-size: 11px;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+        color: var(--cs-ink-faint);
+    }
+
+    .cs-sheet {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(225px, 1fr));
+        gap: 2px;
+        padding: 0 clamp(20px, 5vw, 56px);
+        margin-bottom: clamp(56px, 9vh, 100px);
+    }
+
+    .cs-tile {
+        position: relative;
+        aspect-ratio: 1;
+        display: block;
+        overflow: hidden;
+        background: #e2e4e0;
+    }
+
+    .cs-tile img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .cs-tile-no {
+        position: absolute;
+        z-index: 2;
+        top: 8px;
+        left: 8px;
+        font-size: 10px;
+        letter-spacing: .06em;
+        background: rgba(21, 24, 26, .72);
+        color: var(--cs-lightbox);
+        padding: 2px 6px;
+    }
+
+    .cs-tile-name {
+        position: absolute;
+        z-index: 2;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        padding: 28px 10px 10px;
+        font-size: 11px;
+        letter-spacing: .04em;
+        color: #fff;
+        background: linear-gradient(to top, rgba(10, 11, 10, .88) 0%, rgba(10, 11, 10, .5) 60%, transparent 100%);
+        opacity: 0;
+        transition: opacity .2s;
+    }
+
+    .cs-tile:hover .cs-tile-name,
+    .cs-tile:focus-visible .cs-tile-name { opacity: 1; }
+
+    .cs-tile-placeholder {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        color: var(--cs-ink-faint);
+    }
+
+    /* Process */
+    .cs-process {
+        padding: 0 clamp(20px, 5vw, 56px);
+        margin-bottom: clamp(56px, 9vh, 100px);
+        border-top: 1px solid var(--cs-rule);
+    }
+
+    .cs-process-step {
+        display: flex;
+        gap: 20px;
+        padding: 22px 0;
+        border-bottom: 1px solid var(--cs-rule);
+    }
+
+    .cs-process-step .n {
+        font-family: 'Anton', 'Arial Narrow', sans-serif;
+        font-size: 1.6rem;
+        color: var(--cs-ink-faint);
+        flex-shrink: 0;
+        width: 2.4em;
+    }
+
+    .cs-process-step h3 {
+        font-size: 13px;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+        margin: 0 0 4px;
+    }
+
+    .cs-process-step p {
+        font-size: 13px;
+        color: var(--cs-ink-soft);
+        margin: 0;
+        max-width: 36rem;
+    }
+
+    /* CTA band */
+    .cs-cta-band {
+        background: var(--cs-ink);
+        color: var(--cs-lightbox);
+        text-align: center;
+        padding: clamp(56px, 10vh, 110px) 20px;
+        margin-bottom: clamp(48px, 8vh, 80px);
+    }
+
+    .cs-cta-band h2 {
+        font-family: 'Anton', 'Arial Narrow', sans-serif;
+        text-transform: uppercase;
+        font-size: clamp(2rem, 6vw, 3.6rem);
+        margin: 0 0 16px;
+    }
+
+    .cs-cta-band p {
+        color: rgba(242, 244, 241, .66);
+        font-size: 14px;
+        margin: 0 0 32px;
+    }
+
+    .cs-cta-band a {
+        display: inline-block;
+        border: 1px solid var(--cs-lightbox);
+        color: var(--cs-lightbox);
+        padding: 14px 32px;
+        font-size: 12px;
+        letter-spacing: .1em;
+        text-transform: uppercase;
+        transition: background .15s, color .15s;
+    }
+
+    .cs-cta-band a:hover {
+        background: var(--cs-lightbox);
+        color: var(--cs-ink);
+    }
+
+    /* Contact block */
+    .cs-contact {
+        padding: 0 clamp(20px, 5vw, 56px) clamp(56px, 9vh, 96px);
+        text-align: center;
+    }
+
+    .cs-contact h2 {
+        font-family: 'Anton', 'Arial Narrow', sans-serif;
+        text-transform: uppercase;
+        font-size: clamp(1.4rem, 3.5vw, 2rem);
+        margin: 0 0 12px;
+    }
+
+    .cs-contact p {
+        color: var(--cs-ink-soft);
+        font-size: 13px;
+        margin: 0 0 20px;
+    }
+
+    .cs-contact-link {
+        font-size: 12px;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+        color: var(--cs-grease);
+        border-bottom: 1px solid var(--cs-grease);
+        padding-bottom: 2px;
+    }
+
+    .cs-empty {
+        padding: 0 clamp(20px, 5vw, 56px) clamp(56px, 9vh, 96px);
+        text-align: center;
+        color: var(--cs-ink-soft);
+        font-size: 13px;
+    }
+
+    /* Clearance for the fixed bottom rail -- scoped to this page only
+       so no other version-2 page's footer spacing shifts. */
+    body.cs-home footer {
+        padding-bottom: 34px;
+        color: var(--cs-ink-faint, rgba(21, 24, 26, .38));
+        border-top-color: var(--cs-rule, rgba(21, 24, 26, .16));
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .cs-ticker-track { animation: none; }
+        .cs-grease-mark ellipse { transition: none; }
     }
 
     @media (max-width: 767.98px) {
-        .hero-grid {
+        .cs-hero {
+            grid-template-columns: 1fr;
+            padding: 0 20px 40px;
+        }
+
+        .cs-hero-feature-tag {
+            left: 14px;
+            bottom: -12px;
+            font-size: 10px;
+            padding: 8px 14px;
+        }
+
+        .cs-identity { padding: 0 20px; }
+
+        .cs-ticker-track { gap: 32px; animation-duration: 18s; }
+        .cs-ticker-track span::after { margin-left: 32px; }
+
+        .cs-sheet {
             grid-template-columns: repeat(2, 1fr);
-            grid-template-rows: none;
-            grid-auto-rows: 18vh;
-            height: 100vh;
+            padding: 0 20px;
         }
 
-        /* Undo the desktop's fixed 6x4 cell assignments -- mobile uses
-           a simple auto-flowing 2-column grid instead. */
-        .hero-photo {
-            grid-column: auto;
-            grid-row: auto;
-        }
+        .cs-sheet-head,
+        .cs-process,
+        .cs-contact,
+        .cs-empty { padding-left: 20px; padding-right: 20px; }
 
-        .hero-headline {
-            grid-column: span 2;
-            grid-row: span 2;
-            padding: 1.5rem;
-        }
-
-        /* Mobile shows one fewer photo than desktop (6 vs 7) -- feels
-           less cramped stacked in 2 columns. */
-        .hero-photo:nth-of-type(7) {
-            display: none;
-        }
+        .cs-process-step .n { width: 1.8em; font-size: 1.2rem; }
     }
-
 </style>

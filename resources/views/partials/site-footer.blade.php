@@ -1,5 +1,5 @@
 <footer>
     <div class="container text-center">
-        {{ \App\Models\Setting::get('footer_text') }}
+        {{ str_replace('{year}', now()->year, \App\Models\Setting::get('footer_text')) }}
     </div>
 </footer>

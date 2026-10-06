@@ -40,6 +40,9 @@
         font-family: -apple-system, BlinkMacSystemFont, 'Inter', system-ui, sans-serif;
         font-weight: 400;
         -webkit-font-smoothing: antialiased;
+        /* Stops the double-tap-to-zoom gesture on mobile without disabling
+           pinch-zoom or scrolling. */
+        touch-action: manipulation;
     }
 
     a { text-decoration: none; }

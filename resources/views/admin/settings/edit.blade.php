@@ -11,6 +11,7 @@
             'about' => ['about_title', 'about_body'],
             'contact' => ['contact_title', 'contact_body'],
             'social' => ['social_links'],
+            'homev2' => ['home_services', 'home_process_steps', 'home_cta_heading', 'home_cta_subtext'],
             'theme' => ['theme'],
         ];
         $activeTab = 'general';
@@ -73,6 +74,12 @@
                         <button class="nav-link {{ $activeTab === 'social' ? 'active' : '' }}" id="tab-social-btn"
                                 data-bs-toggle="tab" data-bs-target="#tab-social" type="button" role="tab">
                             Social Links
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link {{ $activeTab === 'homev2' ? 'active' : '' }}" id="tab-homev2-btn"
+                                data-bs-toggle="tab" data-bs-target="#tab-homev2" type="button" role="tab">
+                            Homepage (v2)
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
@@ -252,6 +259,100 @@
                             </template>
                         </div>
 
+                        <div class="tab-pane fade {{ $activeTab === 'homev2' ? 'show active' : '' }}" id="tab-homev2" role="tabpanel">
+                            <div class="form-text card-muted mb-3">
+                                Only used by the "version 2.0" theme's redesigned homepage (services ticker,
+                                process steps, and closing call-to-action band). No effect if the active
+                                theme (Theme tab) is set to something else.
+                            </div>
+
+                            <h6 class="mb-2">Services Ticker</h6>
+                            <div class="form-text card-muted mb-2">
+                                Short phrases scrolling in the band below the homepage hero (e.g. "Weddings").
+                            </div>
+
+                            <div id="homeServicesRows">
+                                @foreach (old('home_services', $homeServices) as $i => $service)
+                                    <div class="row g-2 mb-2 home-service-row">
+                                        <div class="col-10">
+                                            <input type="text" name="home_services[{{ $i }}]"
+                                                   value="{{ $service }}"
+                                                   class="form-control form-control-sm" placeholder="e.g. Weddings" maxlength="40">
+                                        </div>
+                                        <div class="col-1 d-flex align-items-center">
+                                            <button type="button" class="btn btn-sm btn-outline-light remove-home-service-row" aria-label="Remove">&times;</button>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                            <button type="button" id="addHomeServiceRow" class="btn btn-sm btn-tinted mb-4">+ Add Item</button>
+                            <template id="homeServiceRowTemplate">
+                                <div class="row g-2 mb-2 home-service-row">
+                                    <div class="col-10">
+                                        <input type="text" name="home_services[__INDEX__]"
+                                               class="form-control form-control-sm" placeholder="e.g. Weddings" maxlength="40">
+                                    </div>
+                                    <div class="col-1 d-flex align-items-center">
+                                        <button type="button" class="btn btn-sm btn-outline-light remove-home-service-row" aria-label="Remove">&times;</button>
+                                    </div>
+                                </div>
+                            </template>
+
+                            <h6 class="mb-2">Process Steps</h6>
+                            <div class="form-text card-muted mb-2">
+                                The numbered "how it works" list. Steps are numbered in the order shown here.
+                            </div>
+
+                            <div id="homeStepsRows">
+                                @foreach (old('home_process_steps', $homeProcessSteps) as $i => $step)
+                                    <div class="row g-2 mb-2 home-step-row align-items-start">
+                                        <div class="col-3">
+                                            <input type="text" name="home_process_steps[{{ $i }}][title]"
+                                                   value="{{ $step['title'] ?? '' }}"
+                                                   class="form-control form-control-sm" placeholder="Title" maxlength="40">
+                                        </div>
+                                        <div class="col-8">
+                                            <textarea name="home_process_steps[{{ $i }}][body]" rows="2"
+                                                      class="form-control form-control-sm" placeholder="Description" maxlength="400">{{ $step['body'] ?? '' }}</textarea>
+                                        </div>
+                                        <div class="col-1 d-flex align-items-center pt-1">
+                                            <button type="button" class="btn btn-sm btn-outline-light remove-home-step-row" aria-label="Remove">&times;</button>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                            <button type="button" id="addHomeStepRow" class="btn btn-sm btn-tinted mb-4">+ Add Step</button>
+                            <template id="homeStepRowTemplate">
+                                <div class="row g-2 mb-2 home-step-row align-items-start">
+                                    <div class="col-3">
+                                        <input type="text" name="home_process_steps[__INDEX__][title]"
+                                               class="form-control form-control-sm" placeholder="Title" maxlength="40">
+                                    </div>
+                                    <div class="col-8">
+                                        <textarea name="home_process_steps[__INDEX__][body]" rows="2"
+                                                  class="form-control form-control-sm" placeholder="Description" maxlength="400"></textarea>
+                                    </div>
+                                    <div class="col-1 d-flex align-items-center pt-1">
+                                        <button type="button" class="btn btn-sm btn-outline-light remove-home-step-row" aria-label="Remove">&times;</button>
+                                    </div>
+                                </div>
+                            </template>
+
+                            <h6 class="mb-2">Closing Call-to-Action Band</h6>
+                            <div class="mb-3">
+                                <label for="home_cta_heading" class="form-label">Heading</label>
+                                <input type="text" name="home_cta_heading" id="home_cta_heading"
+                                       value="{{ old('home_cta_heading', $settings['home_cta_heading']) }}"
+                                       class="form-control" maxlength="120">
+                            </div>
+                            <div class="mb-3">
+                                <label for="home_cta_subtext" class="form-label">Subtext</label>
+                                <input type="text" name="home_cta_subtext" id="home_cta_subtext"
+                                       value="{{ old('home_cta_subtext', $settings['home_cta_subtext']) }}"
+                                       class="form-control" maxlength="200">
+                            </div>
+                        </div>
+
                         <div class="tab-pane fade {{ $activeTab === 'theme' ? 'show active' : '' }}" id="tab-theme" role="tabpanel">
                             <div class="mb-3">
                                 <label for="theme" class="form-label">Active Theme</label>
@@ -298,6 +399,50 @@
                 const button = e.target.closest('.remove-social-row');
                 if (button) {
                     button.closest('.social-link-row').remove();
+                }
+            });
+        })();
+
+        (function () {
+            const rowsContainer = document.getElementById('homeServicesRows');
+            const addButton = document.getElementById('addHomeServiceRow');
+            const template = document.getElementById('homeServiceRowTemplate');
+            let nextIndex = rowsContainer.querySelectorAll('.home-service-row').length;
+
+            addButton.addEventListener('click', () => {
+                const html = template.innerHTML.replaceAll('__INDEX__', nextIndex);
+                const wrapper = document.createElement('div');
+                wrapper.innerHTML = html.trim();
+                rowsContainer.appendChild(wrapper.firstElementChild);
+                nextIndex++;
+            });
+
+            rowsContainer.addEventListener('click', (e) => {
+                const button = e.target.closest('.remove-home-service-row');
+                if (button) {
+                    button.closest('.home-service-row').remove();
+                }
+            });
+        })();
+
+        (function () {
+            const rowsContainer = document.getElementById('homeStepsRows');
+            const addButton = document.getElementById('addHomeStepRow');
+            const template = document.getElementById('homeStepRowTemplate');
+            let nextIndex = rowsContainer.querySelectorAll('.home-step-row').length;
+
+            addButton.addEventListener('click', () => {
+                const html = template.innerHTML.replaceAll('__INDEX__', nextIndex);
+                const wrapper = document.createElement('div');
+                wrapper.innerHTML = html.trim();
+                rowsContainer.appendChild(wrapper.firstElementChild);
+                nextIndex++;
+            });
+
+            rowsContainer.addEventListener('click', (e) => {
+                const button = e.target.closest('.remove-home-step-row');
+                if (button) {
+                    button.closest('.home-step-row').remove();
                 }
             });
         })();

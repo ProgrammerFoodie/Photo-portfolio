@@ -23,10 +23,13 @@ class Photo extends Model
         'captured_at',
         'status',
         'sort_order',
+        'icloud_photo_guid',
+        'icloud_checksum',
     ];
 
     protected $casts = [
         'captured_at' => 'datetime',
+        'sort_order' => 'integer',
     ];
 
     public function album(): BelongsTo

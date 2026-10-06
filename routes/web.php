@@ -44,6 +44,7 @@ Route::middleware('auth')->group(function () {
 require __DIR__.'/auth.php';
 use App\Http\Controllers\PhotoUploadController;
 use App\Http\Controllers\AlbumController;
+use App\Http\Controllers\ICloudAlbumController;
 use App\Http\Controllers\ContactMessageController;
 use App\Http\Controllers\UserController;
 
@@ -58,7 +59,16 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::get('/albums/{album}/edit', [AlbumController::class, 'edit'])->name('admin.albums.edit');
     Route::put('/albums/{album}', [AlbumController::class, 'update'])->name('admin.albums.update');
     Route::patch('/albums/{album}/cover', [AlbumController::class, 'setCover'])->name('admin.albums.setCover');
+    Route::patch('/albums/{album}/photos/reorder', [AlbumController::class, 'reorderPinnedPhotos'])->name('admin.albums.photos.reorder');
     Route::delete('/albums/{album}', [AlbumController::class, 'destroy'])->name('admin.albums.destroy');
+
+    // Linking an album to an iCloud shared album. Imports always run on the
+    // queue — see ICloudAlbumController.
+    Route::get('/albums-icloud/link', [ICloudAlbumController::class, 'create'])->name('admin.icloud.create');
+    Route::post('/albums-icloud/link', [ICloudAlbumController::class, 'store'])->name('admin.icloud.store');
+    Route::post('/albums/{album}/icloud/sync', [ICloudAlbumController::class, 'sync'])->name('admin.icloud.sync');
+    Route::patch('/albums/{album}/icloud', [ICloudAlbumController::class, 'update'])->name('admin.icloud.update');
+    Route::delete('/albums/{album}/icloud', [ICloudAlbumController::class, 'destroy'])->name('admin.icloud.destroy');
 
     Route::get('/settings', [SettingsController::class, 'edit'])->name('admin.settings.edit');
     Route::put('/settings', [SettingsController::class, 'update'])->name('admin.settings.update');

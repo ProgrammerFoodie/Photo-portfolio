@@ -1,43 +1,104 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-bs-theme="dark">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ $album->name }} &middot; {{ \App\Models\Setting::get('site_title') }}</title>
-
-    @include(\App\Support\Theme::is('version-2') ? 'partials.site-styles-version-2' : 'partials.site-styles')
+@php
+    $metaDescription = $album->description ?: ($album->photos->count() . ' photos from ' . $album->name . ' — ' . \App\Models\Setting::get('site_title'));
+    $metaImage = $album->cover?->thumbnail_path ? route('photos.thumbnail', $album->cover) : null;
+@endphp
+@include('partials.site-head', ['pageTitle' => $album->name . ' · ' . \App\Models\Setting::get('site_title'), 'metaDescription' => $metaDescription, 'metaImage' => $metaImage])
+@if (\App\Support\Theme::is('version-2'))
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+@endif
 
     <style>
-        .album-header {
-            padding: 2rem 0 1.5rem;
+        /* Contact-sheet redesign (version-2 only) -- "roll" header replacing
+           the old .album-header, matching docs/contact-sheet-implementation-plan.md
+           Section 4.2. Namespaced `cs-` like the home page's design system;
+           tokens (--cs-ink etc.) come from site-styles-version-2.blade.php's
+           shared :root block. Default-theme rules for .album-header (below)
+           are untouched. */
+        body.cs-home {
+            background: var(--cs-lightbox, #f2f4f1);
+            color: var(--cs-ink, #15181a);
+            font-family: 'IBM Plex Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
         }
 
-        .album-header .back-link {
-            color: var(--brand);
-            font-size: 0.9rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.2rem;
+        .cs-rail { position: fixed; left: 0; right: 0; height: 22px; z-index: 50; background: var(--cs-ink, #15181a); display: flex; align-items: center; }
+        .cs-rail.top { top: 0; } .cs-rail.bottom { bottom: 0; }
+        .cs-rail .cs-holes { flex: 1; align-self: stretch; background-image: repeating-radial-gradient(circle at 11px 11px, var(--cs-lightbox, #f2f4f1) 0 4px, transparent 4px 22px); background-size: 22px 22px; }
+        .cs-rail .cs-counter { flex-shrink: 0; padding: 0 14px; height: 100%; display: flex; align-items: center; gap: 8px; background: var(--cs-ink, #15181a); color: var(--cs-lightbox, #f2f4f1); font-size: 11px; font-weight: 600; letter-spacing: 0.08em; }
+        .cs-rail .cs-counter .n { color: #e8a4a8; }
+
+        .cs-identity { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 10px; padding: 44px clamp(20px, 5vw, 56px) 0; margin-bottom: clamp(28px, 5vh, 48px); }
+        .cs-identity .cs-mark { font-size: 13px; font-weight: 600; letter-spacing: 0.14em; color: var(--cs-ink, #15181a); }
+        .cs-identity nav { display: flex; gap: 22px; }
+        .cs-identity nav a { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--cs-ink-soft, rgba(21,24,26,.62)); padding: 4px 0; }
+        .cs-identity nav a:hover, .cs-identity nav a.active { color: var(--cs-grease, #a91f28); }
+
+        .cs-roll-head { padding: 0 clamp(20px, 5vw, 56px); margin-bottom: clamp(28px, 5vh, 48px); }
+        .cs-back-link { display: inline-block; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--cs-ink-soft, rgba(21,24,26,.62)); margin-bottom: 18px; }
+        .cs-back-link:hover { color: var(--cs-grease, #a91f28); }
+
+        .cs-roll-title-row { display: flex; align-items: center; gap: 20px; }
+        .cs-roll-title { flex: 1; min-width: 0; text-align: center; }
+        .cs-roll-eyebrow { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--cs-ink-faint, rgba(21,24,26,.38)); margin-bottom: 10px; }
+        .cs-roll-title h1 { font-family: 'Anton', 'Arial Narrow', sans-serif; text-transform: uppercase; font-size: clamp(2rem, 5.5vw, 3.6rem); line-height: 0.98; margin: 0; }
+        .cs-roll-desc { color: var(--cs-ink-soft, rgba(21,24,26,.62)); font-size: 13px; max-width: 40rem; margin: 10px auto 0; }
+
+        .cs-album-nav { flex-shrink: 0; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--cs-rule, rgba(21,24,26,.16)); color: var(--cs-ink, #15181a); }
+        .cs-album-nav svg { width: 20px; height: 20px; }
+        .cs-album-nav:hover { border-color: var(--cs-grease, #a91f28); color: var(--cs-grease, #a91f28); }
+        .cs-album-nav-disabled { opacity: 0.28; pointer-events: none; }
+
+        body.cs-home footer {
+            padding-bottom: 34px;
+            color: var(--cs-ink-faint, rgba(21, 24, 26, .38));
+            border-top-color: var(--cs-rule, rgba(21, 24, 26, .16));
         }
 
-        .album-header .back-link:hover {
-            color: var(--brand-hover);
-        }
-
-        .album-header h1 {
-            font-weight: 700;
-            font-size: clamp(1.6rem, 4vw, 2.4rem);
-            letter-spacing: -0.02em;
-            margin: 0.4rem 0 0.2rem;
-        }
-
-        .album-header .meta {
-            color: var(--text-muted);
-            font-size: 0.9rem;
+        @media (max-width: 767.98px) {
+            .cs-identity { padding: 44px 20px 0; }
+            .cs-roll-head { padding: 0 20px; }
+            .cs-roll-title-row { gap: 10px; }
+            .cs-album-nav { width: 32px; height: 32px; }
         }
 
         .toolbar {
             padding: 0 0 1.25rem;
+        }
+
+        /* Scoped to this page's toolbar only -- .btn-tinted/.btn-primary
+           stay untouched everywhere else (e.g. the Contact page's submit
+           button) since they're global classes. */
+        .toolbar .btn {
+            border-radius: 0;
+            font-family: 'IBM Plex Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
+            font-size: 11px;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+        }
+
+        .toolbar .btn-tinted {
+            background: transparent;
+            color: var(--cs-ink, #15181a);
+            border: 1px solid var(--cs-rule, rgba(21, 24, 26, .16));
+        }
+
+        .toolbar .btn-tinted:hover {
+            background: transparent;
+            border-color: var(--cs-grease, #a91f28);
+            color: var(--cs-grease, #a91f28);
+        }
+
+        .toolbar .btn-primary {
+            background: var(--cs-ink, #15181a);
+            border-color: var(--cs-ink, #15181a);
+        }
+
+        .toolbar .btn-primary:hover {
+            background: var(--cs-grease, #a91f28);
+            border-color: var(--cs-grease, #a91f28);
         }
 
         .photo-grid {
@@ -53,16 +114,30 @@
 
         .photo-tile {
             position: relative;
-            border-radius: 0.6rem;
+            border-radius: 0;
             overflow: hidden;
             cursor: pointer;
-            background-color: var(--bg-elevated);
+            background-color: #e2e4e0;
+        }
+
+        .photo-tile-no {
+            position: absolute;
+            z-index: 2;
+            top: 8px;
+            left: 8px;
+            font-size: 10px;
+            letter-spacing: .06em;
+            font-family: 'IBM Plex Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
+            background: rgba(21, 24, 26, .72);
+            color: var(--cs-lightbox, #f2f4f1);
+            padding: 2px 6px;
+            pointer-events: none;
         }
 
         .photo-tile-img {
             width: 100%;
             height: 100%;
-            object-fit: contain;
+            object-fit: cover;
             display: block;
             transition: transform 0.2s ease;
         }
@@ -88,8 +163,8 @@
         }
 
         .photo-tile-checkbox:checked {
-            background-color: var(--brand);
-            border-color: var(--brand);
+            background-color: var(--cs-grease, #a91f28);
+            border-color: var(--cs-grease, #a91f28);
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='white'%3E%3Cpath d='M13.485 1.929a1 1 0 0 1 .102 1.41l-7.5 8.5a1 1 0 0 1-1.464.05L1.4 8.667a1 1 0 1 1 1.4-1.428l2.42 2.372 6.83-7.74a1 1 0 0 1 1.435-.058z'/%3E%3C/svg%3E");
             background-repeat: no-repeat;
             background-position: center;
@@ -127,76 +202,234 @@
             display: none;
         }
 
+        /* iOS/macOS-style fullscreen viewer: rounded window, frosted-glass
+           toolbar and controls, floating circular nav buttons. Recolored to
+           the contact-sheet palette (near-black + grease-red) per the plan
+           doc's Section 4.3 note -- structure/behavior unchanged. */
         #lightboxModal .modal-content {
-            background-color: #000;
+            background-color: #0a0b0a;
+            border-radius: 16px;
+            overflow: hidden;
         }
 
         #lightboxModal .modal-header {
             background-color: rgba(28, 28, 30, 0.72);
             backdrop-filter: blur(20px) saturate(180%);
             -webkit-backdrop-filter: blur(20px) saturate(180%);
+            padding: 0.85rem 1rem;
+        }
+
+        #lightboxCounter {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 999px;
+            padding: 0.3rem 0.75rem;
+            font-size: 0.8rem;
+        }
+
+        /* Frosted-glass pill buttons, matching the toolbar's material. */
+        #lightboxModal .btn-outline-light,
+        #lightboxModal .btn-tinted {
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 0;
+            border-radius: 999px;
+            color: var(--cs-lightbox, #f2f4f1);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            transition: background-color 0.15s ease;
+        }
+
+        #lightboxModal .btn-outline-light:hover {
+            background-color: rgba(255, 255, 255, 0.18);
+            color: var(--cs-lightbox, #f2f4f1);
+        }
+
+        #lightboxModal .btn-tinted {
+            color: #e8a4a8;
+        }
+
+        #lightboxModal .btn-tinted:hover {
+            background-color: rgba(255, 255, 255, 0.18);
+            color: #f0bfc2;
+        }
+
+        /* Close button as a circular frosted-glass control instead of a
+           plain white X. */
+        #lightboxModal .btn-close {
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            margin: 0;
+            background: rgba(255, 255, 255, 0.1) url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23f2f4f1'%3e%3cpath d='M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854z'/%3e%3c/svg%3e") center / 14px no-repeat;
+            border-radius: 50%;
+            opacity: 1;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            transition: background-color 0.15s ease;
+        }
+
+        #lightboxModal .btn-close:hover {
+            background-color: rgba(255, 255, 255, 0.18);
+            opacity: 1;
         }
 
         #lightboxImg {
             max-height: 85vh;
         }
 
+        /* Darker than Bootstrap's default backdrop so the photo has more
+           contrast against the rest of the page behind it. */
+        .modal-backdrop {
+            --bs-backdrop-opacity: 0.92;
+        }
+
         .lightbox-nav {
             position: absolute;
-            top: 0;
-            bottom: 0;
+            top: 50%;
+            transform: translateY(-50%);
             display: flex;
             align-items: center;
-            width: 4rem;
             justify-content: center;
-            background: none;
+            width: 44px;
+            height: 44px;
+            background-color: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
             border: 0;
+            border-radius: 50%;
             color: #fff;
-            opacity: 0.7;
-            transition: opacity 0.15s ease;
+            opacity: 0.85;
+            transition: background-color 0.15s ease, opacity 0.15s ease;
             z-index: 5;
         }
 
         .lightbox-nav:hover {
             opacity: 1;
+            background-color: rgba(255, 255, 255, 0.18);
         }
 
         .lightbox-nav.lightbox-prev {
-            left: 0;
+            left: 1rem;
         }
 
         .lightbox-nav.lightbox-next {
+            right: 1rem;
+        }
+
+        /* Generous invisible tap targets -- 30% of the image width on each
+           side -- so visitors don't have to hit the small arrow precisely. */
+        .lightbox-tap-zone {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 30%;
+            cursor: pointer;
+            z-index: 3;
+        }
+
+        .lightbox-tap-prev {
+            left: 0;
+        }
+
+        .lightbox-tap-next {
             right: 0;
         }
     </style>
 </head>
-<body>
+<body @if (\App\Support\Theme::is('version-2')) class="cs-home" @endif>
 
-    @include('partials.site-nav')
+    @if (\App\Support\Theme::is('version-2'))
+        @php
+            $navItems = [
+                ['route' => 'home', 'matches' => ['home', 'albums.show'], 'label' => 'Portfolio'],
+                ['route' => 'about', 'matches' => ['about'], 'label' => 'About'],
+                ['route' => 'contact', 'matches' => ['contact'], 'label' => 'Contact'],
+            ];
+        @endphp
 
-    <header class="album-header">
-        <div class="container">
-            <a href="{{ route('home') }}" class="back-link">&larr; All albums</a>
-            <h1>{{ $album->name }}</h1>
-            <div class="meta">
-                {{ $album->photos->count() }} {{ \Illuminate\Support\Str::plural('photo', $album->photos->count()) }}
-                @if ($album->children->isNotEmpty())
-                    &middot; {{ $album->children->count() }} {{ \Illuminate\Support\Str::plural('sub-album', $album->children->count()) }}
+        <div class="cs-rail top">
+            <div class="cs-counter">
+                <span>FRAME</span>
+                <span class="n" id="frameCounter">00</span>
+                <span>/{{ str_pad((string) $album->photos->count(), 2, '0', STR_PAD_LEFT) }}</span>
+            </div>
+            <div class="cs-holes"></div>
+        </div>
+        <div class="cs-rail bottom"><div class="cs-holes"></div></div>
+
+        <div class="cs-identity">
+            <a class="cs-mark" href="{{ route('home') }}">{{ \App\Models\Setting::get('profile_handle') ?: \App\Models\Setting::get('site_title') }}</a>
+            <nav>
+                @foreach ($navItems as $item)
+                    <a class="{{ request()->routeIs(...$item['matches']) ? 'active' : '' }}" href="{{ route($item['route']) }}">{{ $item['label'] }}</a>
+                @endforeach
+            </nav>
+        </div>
+
+        <div class="cs-roll-head">
+            <a class="cs-back-link" href="{{ route('home') }}">&larr; All work</a>
+            <div class="cs-roll-title-row">
+                @if ($prevAlbum)
+                    <a class="cs-album-nav" href="{{ route('albums.show', $prevAlbum) }}" aria-label="Previous album: {{ $prevAlbum->name }}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+                    </a>
+                @else
+                    <span class="cs-album-nav cs-album-nav-disabled" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+                    </span>
                 @endif
-                @if ($album->date_taken)
-                    &middot; {{ $album->date_taken->format('M Y') }}
-                @endif
-                @if ($album->location)
-                    &middot; {{ $album->location }}
+
+                <div class="cs-roll-title">
+                    <div class="cs-roll-eyebrow">
+                        {{ $album->date_taken?->format('F Y') ?? 'Undated' }}@if($album->location) &middot; {{ $album->location }} @endif
+                        &middot; {{ $album->photos->count() }} {{ \Illuminate\Support\Str::plural('frame', $album->photos->count()) }}
+                        @if ($album->children->isNotEmpty())
+                            &middot; {{ $album->children->count() }} {{ \Illuminate\Support\Str::plural('sub-album', $album->children->count()) }}
+                        @endif
+                    </div>
+                    <h1>{{ $album->name }}</h1>
+                    @if ($album->description)
+                        <p class="cs-roll-desc">{{ $album->description }}</p>
+                    @endif
+                </div>
+
+                @if ($nextAlbum)
+                    <a class="cs-album-nav" href="{{ route('albums.show', $nextAlbum) }}" aria-label="Next album: {{ $nextAlbum->name }}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+                    </a>
+                @else
+                    <span class="cs-album-nav cs-album-nav-disabled" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+                    </span>
                 @endif
             </div>
-            @if ($album->description)
-                <p class="meta mt-2 mb-0">{{ $album->description }}</p>
-            @endif
         </div>
-    </header>
+    @else
+        @include('partials.site-nav')
 
-    @include('partials.site-tabs')
+        <header class="album-header">
+            <div class="container">
+                <a href="{{ route('home') }}" class="back-link">&larr; All albums</a>
+                <h1>{{ $album->name }}</h1>
+                <div class="meta">
+                    {{ $album->photos->count() }} {{ \Illuminate\Support\Str::plural('photo', $album->photos->count()) }}
+                    @if ($album->children->isNotEmpty())
+                        &middot; {{ $album->children->count() }} {{ \Illuminate\Support\Str::plural('sub-album', $album->children->count()) }}
+                    @endif
+                    @if ($album->date_taken)
+                        &middot; {{ $album->date_taken->format('M Y') }}
+                    @endif
+                    @if ($album->location)
+                        &middot; {{ $album->location }}
+                    @endif
+                </div>
+                @if ($album->description)
+                    <p class="meta mt-2 mb-0">{{ $album->description }}</p>
+                @endif
+            </div>
+        </header>
+
+        @include('partials.site-tabs')
+    @endif
 
     <main class="container py-4">
         @if ($album->children->isNotEmpty())
@@ -257,12 +490,13 @@
 
             <script type="application/json" id="albumPhotosData">
                 @php
-                    echo $album->photos->map(fn ($photo) => [
+                    echo $album->photos->values()->map(fn ($photo, $i) => [
                         'id' => $photo->id,
                         'thumb' => route('photos.thumbnail', $photo),
                         'view' => route('photos.view', [$album, $photo]),
                         'download' => route('photos.download', [$album, $photo]),
                         'filename' => $photo->original_filename,
+                        'alt' => $album->name . ' — photo ' . ($i + 1),
                         'aspect' => ($photo->width && $photo->height) ? $photo->width / $photo->height : (4 / 3),
                     ])->toJson();
                 @endphp
@@ -276,15 +510,15 @@
         <div class="modal-dialog modal-dialog-centered modal-xl">
             <div class="modal-content border-0">
                 <div class="modal-header border-0">
-                    <span id="lightboxFilename" class="text-body-secondary small"></span>
-                    <span id="lightboxCounter" class="text-body-secondary small ms-3"></span>
+                    <span id="lightboxCounter" class="text-body-secondary small"></span>
                     <div class="ms-auto d-flex align-items-center gap-2">
                         <a id="lightboxFullsize" href="#" target="_blank" rel="noopener" class="btn btn-sm btn-outline-light">Full Size</a>
                         <a id="lightboxDownload" href="#" class="btn btn-sm btn-tinted">Download</a>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                 </div>
                 <div class="modal-body text-center p-0 position-relative">
+                    <div class="lightbox-tap-zone lightbox-tap-prev" aria-hidden="true"></div>
                     <button type="button" id="lightboxPrev" class="lightbox-nav lightbox-prev" aria-label="Previous photo">
                         <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" viewBox="0 0 16 16">
                             <path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/>
@@ -296,6 +530,7 @@
                             <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
                         </svg>
                     </button>
+                    <div class="lightbox-tap-zone lightbox-tap-next" aria-hidden="true"></div>
                 </div>
             </div>
         </div>
@@ -309,6 +544,21 @@
         const selCountEl = document.getElementById('selCount');
         let selectMode = false;
 
+        // Top-rail frame counter (contact-sheet redesign, version-2 only):
+        // tracks which photo tile is currently in view as the grid scrolls.
+        // Tiles are created incrementally (see renderNextBatch below), so
+        // each new tile is added to this same observer as it's created.
+        const frameCounterEl = document.getElementById('frameCounter');
+        const frameCountObserver = (frameCounterEl && 'IntersectionObserver' in window)
+            ? new IntersectionObserver((entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
+                        frameCounterEl.textContent = entry.target.dataset.frame;
+                    }
+                });
+            }, { threshold: [0.5] })
+            : null;
+
         // Full photo list (metadata only — ids/URLs/aspect ratios, a few KB
         // even for a large album) is embedded once in the page. The grid
         // itself is built incrementally in batches as the user scrolls, so
@@ -321,16 +571,22 @@
         const BATCH_SIZE = 30;
         let renderedCount = 0;
 
-        function createTileEl(photo) {
+        function createTileEl(photo, index) {
             const tile = document.createElement('div');
             tile.className = 'photo-tile';
             tile.dataset.photoId = photo.id;
             tile.dataset.aspect = photo.aspect;
+            tile.dataset.frame = String(index + 1).padStart(2, '0');
+
+            const frameNo = document.createElement('span');
+            frameNo.className = 'photo-tile-no';
+            frameNo.textContent = tile.dataset.frame;
+            tile.appendChild(frameNo);
 
             const img = document.createElement('img');
             img.className = 'photo-tile-img';
             img.loading = 'lazy';
-            img.alt = photo.filename;
+            img.alt = photo.alt;
             img.src = photo.thumb;
             tile.appendChild(img);
 
@@ -357,7 +613,14 @@
             }
 
             const nextPhotos = ALBUM_PHOTOS.slice(renderedCount, renderedCount + BATCH_SIZE);
-            nextPhotos.forEach((photo) => grid.appendChild(createTileEl(photo)));
+            const startIndex = renderedCount;
+            nextPhotos.forEach((photo, i) => {
+                const tile = createTileEl(photo, startIndex + i);
+                grid.appendChild(tile);
+                if (frameCountObserver) {
+                    frameCountObserver.observe(tile);
+                }
+            });
             renderedCount += nextPhotos.length;
 
             layoutJustified();
@@ -499,6 +762,7 @@
             const myToken = ++loadToken;
 
             lightboxImgEl.src = photo.thumb;
+            lightboxImgEl.alt = photo.alt;
 
             const fullImg = new Image();
             fullImg.onload = () => {
@@ -511,7 +775,6 @@
 
             document.getElementById('lightboxDownload').href = photo.download;
             document.getElementById('lightboxFullsize').href = photo.view;
-            document.getElementById('lightboxFilename').textContent = photo.filename;
             document.getElementById('lightboxCounter').textContent = `${lightboxIndex + 1} / ${ALBUM_PHOTOS.length}`;
 
             const hasMultiple = ALBUM_PHOTOS.length > 1;
@@ -539,6 +802,17 @@
             lightboxNextBtn.addEventListener('click', () => showLightboxPhoto(lightboxIndex + 1));
         }
 
+        const lightboxTapPrev = document.querySelector('.lightbox-tap-prev');
+        const lightboxTapNext = document.querySelector('.lightbox-tap-next');
+
+        if (lightboxTapPrev) {
+            lightboxTapPrev.addEventListener('click', () => showLightboxPhoto(lightboxIndex - 1));
+        }
+
+        if (lightboxTapNext) {
+            lightboxTapNext.addEventListener('click', () => showLightboxPhoto(lightboxIndex + 1));
+        }
+
         const lightboxModalEl = document.getElementById('lightboxModal');
         if (lightboxModalEl) {
             lightboxModalEl.addEventListener('keydown', (e) => {
@@ -548,6 +822,34 @@
                     showLightboxPhoto(lightboxIndex + 1);
                 }
             });
+
+            // Swipe left/right on mobile to move between photos.
+            let touchStartX = 0;
+            let touchStartY = 0;
+            let touchStartTime = 0;
+
+            lightboxModalEl.addEventListener('touchstart', (e) => {
+                if (e.touches.length !== 1) {
+                    return;
+                }
+                touchStartX = e.touches[0].clientX;
+                touchStartY = e.touches[0].clientY;
+                touchStartTime = Date.now();
+            }, { passive: true });
+
+            lightboxModalEl.addEventListener('touchend', (e) => {
+                if (e.changedTouches.length !== 1) {
+                    return;
+                }
+                const dx = e.changedTouches[0].clientX - touchStartX;
+                const dy = e.changedTouches[0].clientY - touchStartY;
+                const elapsed = Date.now() - touchStartTime;
+
+                const isHorizontalSwipe = Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5 && elapsed < 600;
+                if (isHorizontalSwipe) {
+                    showLightboxPhoto(dx < 0 ? lightboxIndex + 1 : lightboxIndex - 1);
+                }
+            }, { passive: true });
         }
 
         if (toggleBtn) {

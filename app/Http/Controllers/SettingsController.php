@@ -21,6 +21,8 @@ class SettingsController extends Controller
         return view('admin.settings.edit', [
             'settings' => Setting::allCached(),
             'socialLinks' => Setting::socialLinks(),
+            'homeServices' => Setting::homeServices(),
+            'homeProcessSteps' => Setting::homeProcessSteps(),
         ]);
     }
 
@@ -43,12 +45,19 @@ class SettingsController extends Controller
             'profile_cover_position_y' => ['nullable', 'integer', 'min:0', 'max:100'],
             'profile_header_height' => ['nullable', 'integer', 'min:120', 'max:800'],
             'theme' => ['required', 'string', Rule::in(array_keys(config('themes')))],
+            'home_services' => ['nullable', 'array'],
+            'home_services.*' => ['nullable', 'string', 'max:40'],
+            'home_process_steps' => ['nullable', 'array'],
+            'home_process_steps.*.title' => ['nullable', 'string', 'max:40'],
+            'home_process_steps.*.body' => ['nullable', 'string', 'max:400'],
+            'home_cta_heading' => ['nullable', 'string', 'max:120'],
+            'home_cta_subtext' => ['nullable', 'string', 'max:200'],
         ]);
 
         $previousTheme = Setting::get('theme');
 
         foreach ($validated as $key => $value) {
-            if (in_array($key, ['social_links', 'cover_image'], true)) {
+            if (in_array($key, ['social_links', 'cover_image', 'home_services', 'home_process_steps'], true)) {
                 continue;
             }
 
@@ -69,6 +78,21 @@ class SettingsController extends Controller
             ->all();
 
         Setting::set('social_links', json_encode($socialLinks));
+
+        $homeServices = collect($validated['home_services'] ?? [])
+            ->filter(fn ($item) => filled($item))
+            ->values()
+            ->all();
+
+        Setting::set('home_services', json_encode($homeServices));
+
+        $homeProcessSteps = collect($validated['home_process_steps'] ?? [])
+            ->filter(fn ($row) => filled($row['title'] ?? null) || filled($row['body'] ?? null))
+            ->map(fn ($row) => ['title' => $row['title'] ?? '', 'body' => $row['body'] ?? ''])
+            ->values()
+            ->all();
+
+        Setting::set('home_process_steps', json_encode($homeProcessSteps));
 
         if ($request->hasFile('cover_image')) {
             $disk = Storage::disk('local');
